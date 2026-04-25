@@ -44,4 +44,7 @@ class MsmeInsightRequest(BaseModel):
 
 
 class MsmeInsightResponse(BaseModel):
-    insight: str
+    headline: str
+    message: str
+    tone: str
+    source_summary: MsmeDemandPressureResponse

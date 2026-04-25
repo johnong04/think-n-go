@@ -4,6 +4,7 @@ from app.core.config import Settings, get_settings
 from app.schemas.msme import MsmeInsightRequest, MsmeInsightResponse
 from app.services.bedrock import BedrockError, converse_text
 from app.services.msme_insight import (
+    build_msme_insight_headline,
     build_msme_insight_system_prompt,
     build_msme_insight_user_prompt,
 )
@@ -29,4 +30,9 @@ async def create_demand_pressure_insight(
     except BedrockError as exc:
         raise HTTPException(status_code=503, detail=str(exc)) from exc
 
-    return MsmeInsightResponse(insight=insight.strip())
+    return MsmeInsightResponse(
+        headline=build_msme_insight_headline(request.llm_summary.model_dump(mode="json")),
+        message=insight.strip(),
+        tone="supportive",
+        source_summary=request.llm_summary,
+    )

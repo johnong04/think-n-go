@@ -28,3 +28,14 @@ def build_msme_insight_user_prompt(llm_summary: dict[str, Any]) -> str:
         "- Keep it to one short paragraph.\n\n"
         f"llm_summary:\n{payload}"
     )
+
+
+def build_msme_insight_headline(llm_summary: dict[str, Any]) -> str:
+    result = llm_summary.get("result", {})
+    label = str(result.get("demand_pressure_label", "Model")).strip() or "Model"
+    topup = (
+        llm_summary.get("calculation_trace", {}).get("suggested_bnpl_topup_rm") or 0
+    )
+    if isinstance(topup, (int, float)) and topup > 0:
+        return f"{label} demand pressure; financing may help"
+    return f"{label} demand pressure detected"

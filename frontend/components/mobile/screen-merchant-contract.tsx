@@ -1,20 +1,29 @@
 "use client";
 
 import { motion } from "motion/react";
-import { Lock, Coins, Clock, ArrowDownToLine } from "lucide-react";
+import { ArrowDownToLine, Clock, Coins, Lock } from "lucide-react";
 import { TngAppHeader } from "./tng-app-header";
 import { TngCard } from "./tng-card";
 import { TngButton } from "./tng-button";
-import { escrowDraft, fmtRm } from "@/lib/mobile-mock-data";
+import { fmtRm, type EscrowDraft } from "@/lib/mobile-mock-data";
 
 type Props = {
+  draft: EscrowDraft;
+  repaymentDays: number;
+  expectedDailyRepaymentRm: number;
   onLock: () => void;
   onBack: () => void;
 };
 
-export function ScreenMerchantContract({ onLock, onBack }: Props) {
-  const totalYield = escrowDraft.dailyYieldRm * escrowDraft.termDays;
-  const ownPct = (escrowDraft.ownFundsRm / escrowDraft.totalRm) * 100;
+export function ScreenMerchantContract({
+  draft,
+  repaymentDays,
+  expectedDailyRepaymentRm,
+  onLock,
+  onBack,
+}: Props) {
+  const totalYield = draft.dailyYieldRm * draft.termDays;
+  const ownPct = draft.totalRm > 0 ? (draft.ownFundsRm / draft.totalRm) * 100 : 0;
 
   return (
     <>
@@ -28,16 +37,22 @@ export function ScreenMerchantContract({ onLock, onBack }: Props) {
           <TngCard className="flex flex-col gap-3">
             <div className="flex items-center justify-between">
               <span className="text-[10px] font-mono uppercase tracking-[0.1em] text-muted-foreground">
-                Escrow ID · {escrowDraft.escrowId}
+                Escrow ID - {draft.escrowId}
               </span>
               <span className="rounded-full bg-tng-blue-app/10 px-2 py-1 text-[10px] font-semibold text-tng-blue-app">
                 Pending lock
               </span>
             </div>
-            <p className="font-display text-3xl font-bold text-ink">{fmtRm(escrowDraft.totalRm)}</p>
+            <p className="font-display text-3xl font-bold text-ink">{fmtRm(draft.totalRm, 2)}</p>
             <p className="text-[12px] text-muted-foreground">
-              to <strong className="text-ink">{escrowDraft.wholesalerName}</strong> · Net-{escrowDraft.termDays}
+              to <strong className="text-ink">{draft.wholesalerName}</strong> - Net-{draft.termDays}
             </p>
+            {draft.invoiceNum ? (
+              <p className="font-mono text-[10px] uppercase tracking-[0.08em] text-muted-foreground">
+                Invoice {draft.invoiceNum}
+                {draft.invoiceRef ? ` / ${draft.invoiceRef}` : ""}
+              </p>
+            ) : null}
           </TngCard>
         </motion.div>
 
@@ -49,13 +64,13 @@ export function ScreenMerchantContract({ onLock, onBack }: Props) {
             <motion.div
               className="bg-tng-blue-app"
               initial={{ width: 0 }}
-              animate={{ width: `${ownPct}%` }}
+              animate={{ width: `${Math.max(0, Math.min(100, ownPct))}%` }}
               transition={{ duration: 0.6, delay: 0.2 }}
             />
             <motion.div
               className="bg-tng-yellow"
               initial={{ width: 0 }}
-              animate={{ width: `${100 - ownPct}%` }}
+              animate={{ width: `${Math.max(0, 100 - ownPct)}%` }}
               transition={{ duration: 0.6, delay: 0.4 }}
             />
           </div>
@@ -64,14 +79,18 @@ export function ScreenMerchantContract({ onLock, onBack }: Props) {
               <span className="mt-1.5 size-2 rounded-full bg-tng-blue-app" />
               <div>
                 <p className="text-muted-foreground">Own funds</p>
-                <p className="font-display text-lg font-bold text-ink">{fmtRm(escrowDraft.ownFundsRm)}</p>
+                <p className="font-display text-lg font-bold text-ink">
+                  {fmtRm(draft.ownFundsRm, 2)}
+                </p>
               </div>
             </div>
             <div className="flex items-start gap-2">
               <span className="mt-1.5 size-2 rounded-full bg-tng-yellow" />
               <div>
                 <p className="text-muted-foreground">BNPL line</p>
-                <p className="font-display text-lg font-bold text-ink">{fmtRm(escrowDraft.bnplRm)}</p>
+                <p className="font-display text-lg font-bold text-ink">
+                  {fmtRm(draft.bnplRm, 2)}
+                </p>
               </div>
             </div>
           </div>
@@ -81,17 +100,32 @@ export function ScreenMerchantContract({ onLock, onBack }: Props) {
           <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
             Terms
           </p>
-          <Row icon={<Clock className="size-4" />}              label="Lock duration"      value={`${escrowDraft.termDays} days`} />
-          <Row icon={<Coins className="size-4" />}              label="Daily yield"        value={`+${fmtRm(escrowDraft.dailyYieldRm, 2)} (TNG GO+)`} />
-          <Row icon={<Coins className="size-4" />}              label={`Projected yield (${escrowDraft.termDays}d)`}    value={`+${fmtRm(totalYield, 2)}`} />
-          <Row icon={<ArrowDownToLine className="size-4" />}    label="BNPL repayment"     value={`${escrowDraft.repaymentSweepPct}% sweep on incoming QR`} />
-          <Row icon={<Lock className="size-4" />}               label="Settlement"         value={escrowDraft.dispatchEta} />
+          <Row icon={<Clock className="size-4" />} label="Lock duration" value={`${draft.termDays} days`} />
+          <Row
+            icon={<Coins className="size-4" />}
+            label="Daily yield"
+            value={`+${fmtRm(draft.dailyYieldRm, 2)} (TNG GO+)`}
+          />
+          <Row
+            icon={<Coins className="size-4" />}
+            label={`Projected yield (${draft.termDays}d)`}
+            value={`+${fmtRm(totalYield, 2)}`}
+          />
+          <Row
+            icon={<ArrowDownToLine className="size-4" />}
+            label="BNPL repayment"
+            value={`${draft.repaymentSweepPct}% sweep - ${fmtRm(expectedDailyRepaymentRm, 2)}/day - ~${repaymentDays}d`}
+          />
+          <Row icon={<Lock className="size-4" />} label="Settlement" value={draft.dispatchEta} />
+          {draft.description ? (
+            <Row icon={<Lock className="size-4" />} label="Invoice note" value={draft.description} />
+          ) : null}
         </TngCard>
 
         <div className="mt-2 flex flex-col gap-2">
           <TngButton onClick={onLock}>
             <Lock className="mr-2 size-4" />
-            Lock Escrow {fmtRm(escrowDraft.totalRm)}
+            Lock Escrow {fmtRm(draft.totalRm, 2)}
           </TngButton>
           <TngButton variant="secondary" onClick={onBack}>
             Edit

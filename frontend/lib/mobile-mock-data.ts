@@ -28,6 +28,8 @@ export const stockoutAlert = {
 
 export type EscrowDraft = {
   escrowId: string;
+  invoiceNum?: string;
+  invoiceRef?: string | null;
   wholesalerName: string;
   totalRm: number;
   ownFundsRm: number;
@@ -36,10 +38,14 @@ export type EscrowDraft = {
   dailyYieldRm: number;
   repaymentSweepPct: number;
   dispatchEta: string;
+  description?: string | null;
+  receiverName?: string | null;
 };
 
 export const escrowDraft: EscrowDraft = {
   escrowId: "ESC-7142",
+  invoiceNum: "INV-TNG-DEMO",
+  invoiceRef: "QR-DEMO-7142",
   wholesalerName: "Hartono Manufacturing",
   totalRm: 1000,
   ownFundsRm: 500,
@@ -48,6 +54,8 @@ export const escrowDraft: EscrowDraft = {
   dailyYieldRm: 0.34,
   repaymentSweepPct: 5,
   dispatchEta: "Same-day dispatch",
+  description: "Pre-contract commercial invoice",
+  receiverName: "Ahmad bin Yusof",
 };
 
 export type ClientRow = {

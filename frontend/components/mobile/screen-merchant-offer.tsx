@@ -4,22 +4,28 @@ import { motion } from "motion/react";
 import { CheckCircle2 } from "lucide-react";
 import { TngCard } from "./tng-card";
 import { TngButton } from "./tng-button";
-import { escrowDraft, fmtRm } from "@/lib/mobile-mock-data";
+import { fmtRm, type EscrowDraft } from "@/lib/mobile-mock-data";
 
 type Props = {
+  draft: EscrowDraft;
   discountPct: number;
   onAccept: () => void;
   onDecline: () => void;
   settled: boolean;
 };
 
-export function ScreenMerchantOffer({ discountPct, onAccept, onDecline, settled }: Props) {
-  const discountAmount = Math.round((escrowDraft.totalRm * discountPct) / 100);
-  const payout = escrowDraft.totalRm - discountAmount;
+export function ScreenMerchantOffer({
+  draft,
+  discountPct,
+  onAccept,
+  onDecline,
+  settled,
+}: Props) {
+  const discountAmount = Math.round((draft.totalRm * discountPct) / 100);
+  const payout = draft.totalRm - discountAmount;
 
   return (
     <div className="flex flex-1 flex-col items-center justify-end px-5 pb-10">
-      {/* Lock-screen wallpaper hint behind the notification */}
       <div className="absolute inset-x-5 top-24 text-center text-white">
         <p className="font-display text-[60px] font-bold leading-none tracking-tight">23:34</p>
         <p className="mt-2 text-sm opacity-80">Friday, 25 April</p>
@@ -36,9 +42,12 @@ export function ScreenMerchantOffer({ discountPct, onAccept, onDecline, settled 
           <TngCard className="flex items-start gap-3 border-2 border-up">
             <CheckCircle2 className="size-6 shrink-0 text-up" />
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-up">Escrow released</p>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-up">
+                Escrow released
+              </p>
               <p className="mt-1 text-[14px] text-ink">
-                {fmtRm(payout)} settled to {escrowDraft.wholesalerName}. {fmtRm(discountAmount)} returned to your wallet.
+                {fmtRm(payout, 2)} settled to {draft.wholesalerName}.{" "}
+                {fmtRm(discountAmount, 2)} returned to your wallet.
               </p>
             </div>
           </TngCard>
@@ -54,22 +63,23 @@ export function ScreenMerchantOffer({ discountPct, onAccept, onDecline, settled 
           <div className="overflow-hidden rounded-[24px] bg-white/15 backdrop-blur-md">
             <div className="flex items-center gap-2 border-b border-white/15 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.08em] text-white">
               <span className="size-2 rounded-full bg-tng-yellow" />
-              TNG Wallet · Now
+              TNG Wallet - Now
             </div>
             <div className="bg-white p-5 text-ink">
               <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-tng-blue-deep">
-                Wholesaler offer · Early release
+                Wholesaler offer - Early release
               </p>
               <p className="mt-2 text-[15px] leading-snug text-ink">
-                <strong>{escrowDraft.wholesalerName}</strong> offers a{" "}
-                <strong className="text-tng-blue-app">{discountPct.toFixed(1)}%</strong> discount to release escrow{" "}
-                <strong>{escrowDraft.escrowId}</strong> today instead of waiting Net-{escrowDraft.termDays}.
+                <strong>{draft.wholesalerName}</strong> offers a{" "}
+                <strong className="text-tng-blue-app">{discountPct.toFixed(1)}%</strong>{" "}
+                discount to release escrow <strong>{draft.escrowId}</strong> today instead of
+                waiting Net-{draft.termDays}.
               </p>
 
               <div className="mt-4 grid grid-cols-3 gap-3 border-t border-stroke-soft pt-3 text-[12px]">
-                <Stat label="Original" value={fmtRm(escrowDraft.totalRm)} />
-                <Stat label="Discount" value={`−${fmtRm(discountAmount)}`} accent />
-                <Stat label="Wholesaler nets" value={fmtRm(payout)} />
+                <Stat label="Original" value={fmtRm(draft.totalRm, 2)} />
+                <Stat label="Discount" value={`-${fmtRm(discountAmount, 2)}`} accent />
+                <Stat label="Wholesaler nets" value={fmtRm(payout, 2)} />
               </div>
 
               <div className="mt-4 flex gap-2">
@@ -77,7 +87,7 @@ export function ScreenMerchantOffer({ discountPct, onAccept, onDecline, settled 
                   Decline
                 </TngButton>
                 <TngButton variant="yellow" onClick={onAccept}>
-                  Accept · You earn {fmtRm(discountAmount)}
+                  Accept - You earn {fmtRm(discountAmount, 2)}
                 </TngButton>
               </div>
             </div>
@@ -92,7 +102,9 @@ function Stat({ label, value, accent }: { label: string; value: string; accent?:
   return (
     <div>
       <p className="text-[10px] uppercase tracking-[0.08em] text-muted-foreground">{label}</p>
-      <p className={`mt-1 font-display text-base font-bold ${accent ? "text-tng-yellow" : "text-ink"}`}>{value}</p>
+      <p className={`mt-1 font-display text-base font-bold ${accent ? "text-tng-yellow" : "text-ink"}`}>
+        {value}
+      </p>
     </div>
   );
 }
