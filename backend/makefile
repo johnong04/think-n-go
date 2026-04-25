@@ -8,7 +8,7 @@ pull:
 	@git pull origin backend
 
 docker-build:
-	docker build -t backendtest -f backend/Dockerfile .
+	docker build -t backendtest .
 
 docker-run-test:
 	docker run -it backendtest /bin/sh
@@ -20,4 +20,4 @@ start:
 	python3 -m venv venv
 	source venv/bin/activate
 	pip install -r requirements.txt
-	python manage.py runserver
+	uvicorn app.main:app --reload
