@@ -1,21 +1,23 @@
 "use client";
 
+import { useId } from "react";
 import { cn } from "@/lib/utils";
 import type { ConnectorState } from "@/lib/swarm-machine";
 
 type Props = {
   state: ConnectorState;
-  /** "handoff" connector renders dashed yellow with a label badge */
+  /** "handoff" connector renders a wider dashed yellow S-curve with a label badge */
   variant?: "default" | "handoff";
 };
 
 export function FlowConnector({ state, variant = "default" }: Props) {
   const isHandoff = variant === "handoff";
   const height = isHandoff ? 56 : 36;
-  // Subtle S-curve: vertical with a small horizontal nudge mid-path
+  // Same-agent: subtle S-curve nudging right then left so the wire reads as a wire, not a line.
+  // Handoff: wider sweep emphasizing the cross-agent jump.
   const path = isHandoff
-    ? `M 50,0 C 30,${height * 0.4} 70,${height * 0.6} 50,${height}`
-    : `M 50,0 C 50,${height * 0.5} 50,${height * 0.5} 50,${height}`;
+    ? `M 50,0 C 28,${height * 0.4} 72,${height * 0.6} 50,${height}`
+    : `M 50,0 C 60,${height * 0.45} 40,${height * 0.55} 50,${height}`;
 
   const stroke =
     state === "active"
@@ -23,6 +25,8 @@ export function FlowConnector({ state, variant = "default" }: Props) {
       : state === "done"
         ? "var(--tng-blue)"
         : "var(--stroke-soft)";
+
+  const pathId = useId().replace(/:/g, "_");
 
   return (
     <div className="relative">
@@ -34,8 +38,11 @@ export function FlowConnector({ state, variant = "default" }: Props) {
         className="block"
         aria-hidden="true"
       >
-        <path
-          d={path}
+        <defs>
+          <path id={pathId} d={path} />
+        </defs>
+        <use
+          href={`#${pathId}`}
           fill="none"
           stroke={stroke}
           strokeWidth={isHandoff ? 2.5 : 2}
@@ -44,7 +51,9 @@ export function FlowConnector({ state, variant = "default" }: Props) {
         />
         {state === "active" && (
           <circle r="3.5" fill="var(--tng-yellow)">
-            <animateMotion dur="1.2s" repeatCount="indefinite" path={path} />
+            <animateMotion dur="1.2s" repeatCount="indefinite">
+              <mpath href={`#${pathId}`} />
+            </animateMotion>
           </circle>
         )}
       </svg>

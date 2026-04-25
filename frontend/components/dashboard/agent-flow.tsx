@@ -60,10 +60,8 @@ export function AgentFlow({ phase, ctaForExecute }: Props) {
                 )}
               />
             )}
-            <div className="flex items-start">
-              <div className="flex-1">
-                <ToolNode tool={tool} state={state} />
-              </div>
+            <div className="flex flex-col gap-2">
+              <ToolNode tool={tool} state={state} />
               <AnimatePresence>
                 {state === "active" && tool.reasoning && (
                   <ReasoningBubble key={`reasoning-${tool.phase}`} text={tool.reasoning} />
