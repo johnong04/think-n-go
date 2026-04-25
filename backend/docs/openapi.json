@@ -1470,18 +1470,6 @@
             "format": "date-time",
             "title": "Updated At"
           },
-          "agreed_at": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "date-time"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Agreed At"
-          },
           "approved_at": {
             "anyOf": [
               {
@@ -1559,7 +1547,6 @@
           "date_created",
           "created_at",
           "updated_at",
-          "agreed_at",
           "approved_at",
           "funded_at",
           "solved_at",

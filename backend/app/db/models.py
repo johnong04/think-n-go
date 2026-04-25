@@ -124,7 +124,7 @@ class Contract(Base):
         ForeignKey("merchants.id", ondelete="SET NULL"),
         nullable=True,
         index=True,
-        comment="Merchant who agrees and funds; populated on AGREED transition",
+        comment="Merchant who agrees and funds; populated on merchant approval",
     )
     business_name = Column(
         String(255),
@@ -240,8 +240,7 @@ class Contract(Base):
     funded_at = Column(DateTime(timezone=True), nullable=True)
     solved_at = Column(DateTime(timezone=True), nullable=True)
 
-    # Legacy timestamps
-    agreed_at = Column(DateTime(timezone=True), nullable=True)
+    # settled_at is captured on release
     settled_at = Column(DateTime(timezone=True), nullable=True)
 
 

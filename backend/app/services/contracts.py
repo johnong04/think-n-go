@@ -84,11 +84,13 @@ async def _get_ledger_or_raise(
     db: AsyncSession, contract_id: uuid.UUID
 ) -> InvestmentLedger:
     result = await db.execute(
-        select(InvestmentLedger).where(InvestmentLedger.contract_id == contract_id)
+        select(InvestmentLedger).where(
+            InvestmentLedger.contract_id == contract_id)
     )
     ledger = result.scalar_one_or_none()
     if ledger is None:
-        raise ValueError(f"No investment ledger found for contract {contract_id}.")
+        raise ValueError(
+            f"No investment ledger found for contract {contract_id}.")
     return ledger
 
 
@@ -181,7 +183,7 @@ async def merchant_agree(
 
         contract.merchant_id = merchant_id
         contract.status = ContractStatus.AGREED
-        contract.agreed_at = datetime.now(timezone.utc)
+        contract.approved_at = datetime.now(timezone.utc)
         contract.updated_at = datetime.now(timezone.utc)
 
     await db.refresh(contract)
@@ -215,7 +217,8 @@ async def fund_contract_to_escrow(
                 "Expected AGREED."
             )
         if contract.merchant_id is None:
-            raise ValueError("Contract has no merchant linked. Call merchant_agree first.")
+            raise ValueError(
+                "Contract has no merchant linked. Call merchant_agree first.")
 
         # 1. Debit merchant wallet
         await _get_or_create_wallet(db, contract.merchant_id, "MERCHANT")
@@ -275,7 +278,8 @@ async def accrue_yield(
 
         ledger = await _get_ledger_or_raise(db, contract_id)
 
-        daily_interest = (ledger.amount_held * ledger.daily_yield_rate) / Decimal("365")
+        daily_interest = (ledger.amount_held *
+                          ledger.daily_yield_rate) / Decimal("365")
         ledger.accrued_interest = ledger.accrued_interest + daily_interest
         ledger.last_accrual_date = datetime.now(timezone.utc)
 
@@ -415,7 +419,8 @@ async def update_contract_product_by_invoice(
         result = await db.execute(select(Contract).where(Contract.invoice_num == invoice_num))
         contract = result.scalar_one_or_none()
         if contract is None:
-            raise ValueError(f"Contract with invoice_num '{invoice_num}' not found.")
+            raise ValueError(
+                f"Contract with invoice_num '{invoice_num}' not found.")
 
     return await update_contract_product(
         db,
@@ -507,7 +512,8 @@ async def update_contract_metadata_by_invoice(
         result = await db.execute(select(Contract).where(Contract.invoice_num == invoice_num))
         contract = result.scalar_one_or_none()
         if contract is None:
-            raise ValueError(f"Contract with invoice_num '{invoice_num}' not found.")
+            raise ValueError(
+                f"Contract with invoice_num '{invoice_num}' not found.")
 
     return await update_contract_metadata(
         db,

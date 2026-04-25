@@ -107,7 +107,8 @@ async def get_contract(contract_id: uuid.UUID, db: AsyncSession = Depends(get_db
 )
 async def get_ledger(contract_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
     result = await db.execute(
-        select(InvestmentLedger).where(InvestmentLedger.contract_id == contract_id)
+        select(InvestmentLedger).where(
+            InvestmentLedger.contract_id == contract_id)
     )
     ledger = result.scalar_one_or_none()
     if ledger is None:
@@ -266,7 +267,8 @@ async def bulk_update_contract_products(
                 )
             updated.append(_contract_out(contract))
         except ValueError as exc:
-            ref = str(item.contract_id) if item.contract_id else (item.invoice_num or "")
+            ref = str(item.contract_id) if item.contract_id else (
+                item.invoice_num or "")
             failed.append({"contract_ref": ref, "error": str(exc)})
 
     return BulkProductUpdateResult(updated=updated, failed=failed)
@@ -319,7 +321,8 @@ async def bulk_update_contract_metadata(
                 )
             updated.append(_contract_out(contract))
         except ValueError as exc:
-            ref = str(item.contract_id) if item.contract_id else (item.invoice_num or "")
+            ref = str(item.contract_id) if item.contract_id else (
+                item.invoice_num or "")
             failed.append({"contract_ref": ref, "error": str(exc)})
 
     return BulkMetadataUpdateResult(updated=updated, failed=failed)
