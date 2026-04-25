@@ -1,3 +1,5 @@
+"use client";
+
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { KpiStrip } from "@/components/dashboard/kpi-strip";
 import { LiquidityChart } from "@/components/dashboard/liquidity-chart";
