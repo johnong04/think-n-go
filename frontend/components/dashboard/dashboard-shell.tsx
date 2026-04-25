@@ -16,7 +16,7 @@ export function DashboardShell({ staticContent }: Props) {
   return (
     <div className="flex min-h-screen flex-1 flex-col">
       <Topbar mode={mode} onModeChange={setMode} />
-      <div className="grid flex-1 grid-cols-[1.18fr_0.82fr]">
+      <div className="grid flex-1 grid-cols-2">
         <main className="bg-grid flex flex-col gap-px bg-paper p-6">
           {staticContent}
           <ArbitrageBanner mode={mode} />
