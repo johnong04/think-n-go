@@ -55,3 +55,44 @@ export function formatRm(value: number, opts?: { decimals?: 0 | 2 }) {
     maximumFractionDigits: opts?.decimals ?? 0,
   }).format(value).replace("MYR", "RM");
 }
+
+export type ToolCall = {
+  id: string;
+  timestamp: string;
+  name: string;
+  detail: string;
+  /** Phase this entry should appear at */
+  appearAt: "ingesting" | "optimizing" | "executing" | "settled";
+};
+
+export const toolCalls: ToolCall[] = [
+  { id: "t-1", timestamp: "15:42:10", name: "escrow.lock",      detail: "RM 2,450 committed to TNG GO+ escrow",   appearAt: "ingesting"  },
+  { id: "t-2", timestamp: "15:42:14", name: "bnpl.drawdown",    detail: "RM 500 fractional shortfall funded",      appearAt: "optimizing" },
+  { id: "t-3", timestamp: "15:42:21", name: "go_plus.yield",    detail: "+RM 0.34 streaming · 1.8% APY",           appearAt: "optimizing" },
+  { id: "t-4", timestamp: "15:43:02", name: "discount.offer",   detail: "2.0% early-release tendered to wholesaler", appearAt: "executing"  },
+  { id: "t-5", timestamp: "15:43:08", name: "escrow.release",   detail: "Settlement posted · ledger 0xa9f3…b21c",   appearAt: "settled"    },
+];
+
+export type AgentMeta = {
+  slot: "ingest" | "optimize" | "execute";
+  title: string;
+  subtitle: string;
+  /** displayed in the active state */
+  metric: string;
+};
+
+export const agents: AgentMeta[] = [
+  { slot: "ingest",   title: "Data Ingest",     subtitle: "ACME_CORP_API",          metric: "stream live"     },
+  { slot: "optimize", title: "Yield Optimizer", subtitle: "DELTA: +0.6%",           metric: "1.8% → 2.4%"     },
+  { slot: "execute",  title: "Execution",       subtitle: "READY TO COMMIT",        metric: "RM 2,401 net"    },
+];
+
+export const ledgerHash = "0xa9f3b8e21c";
+
+export const yieldOffer = {
+  base: 1.8,
+  default: 2.4,
+  max: 4.0,
+  step: 0.1,
+  baseAmount: 2450,
+};
