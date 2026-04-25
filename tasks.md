@@ -60,11 +60,12 @@ Hackathon execution plan derived from [specs.md](specs.md). Frontend-first, demo
 
 ## Phase 4 — Mobile push experience
 
-- [ ] **4.1** Static notification component on `/mobile-mock`
-  - Lock-screen-style banner: "Wholesaler offer: 2% discount, release escrow today?"
-- [ ] **4.2** Accept / Decline buttons — local state only, no backend yet
-- [ ] **4.3** Wire to the dashboard via WebSocket (Supabase Realtime in Phase 6) OR a temporary BroadcastChannel for same-browser demo
-  - Same-browser BroadcastChannel is the fastest demo path; Supabase Realtime is the production-style upgrade.
+- [x] **4.1** Static notification component on `/mobile-mock`
+  - Mobile mock at `/mobile-mock` shows full TNG eWallet styling (blue body, white cards, yellow tab underline, pill buttons). 7 screens across merchant (4) + wholesaler (3) flows from specs §6, click-driven with realistic mock data (Ahmad / Hartono / ESC-7142 / RM 1,000 Net-14).
+- [x] **4.2** Accept / Decline buttons — local state only, no backend yet
+  - Accept/Decline buttons on merchant offer screen and Send Offer / awaiting transitions on wholesaler side. All click handlers publish to `useDemoBus()` so the dashboard can subscribe in Phase 5/6.
+- [x] **4.3** Wire to the dashboard via WebSocket (Supabase Realtime in Phase 6) OR a temporary BroadcastChannel for same-browser demo
+  - BroadcastChannel `think-n-go-bus` wired via `lib/demo-bus.ts`. Single hook `useDemoBus(handler)` for subscribers, `publish(event)` for emitters. Same-origin only — both phone and dashboard share `localhost:3000`. Swap target for Supabase Realtime is internal to the hook.
 
 ## Phase 5 — AI orchestration (Vercel AI SDK v6)
 
@@ -126,6 +127,7 @@ Append-only. When you finish a milestone or learn something a fresh-context agen
 - **YYYY-MM-DD** — what changed / what was learned. (author or agent name)
 -->
 
+- **2026-04-26** — Phase 4 done. `/mobile-mock` is a 390×844 phone shell on TNG-blue (`--tng-blue-app: #1A5FE0`) with a `MERCHANT | WHOLESALER` toggle. Merchant: M1 AI alert → M2 QR scan (auto-advances after 1.8s) → M3 smart contract review (own RM 500 + BNPL RM 500 split bar) → M4 push notification offer (overlay style). Wholesaler: W1 client list (5 mock rows) → W2 liquidation slider (1.0–5.0% discount) → W3 awaiting → settled. Cross-window plumbing: BroadcastChannel `think-n-go-bus`. `wholesaler:offer-sent` triggers M4 to surface even if dispatched from another window (cross-persona demo). Dashboard subscribes in Phase 5+. Two new CSS tokens: `--tng-blue-app` (mobile body), `--tng-red` (QR card brand accent). NO real backend, NO AI calls; everything is `setTimeout` + `useState`. (Claude)
 - **2026-04-25** — Phase 3 done. Right rail now hosts the SwarmConsole orchestrator: SwarmBadge (active/settled state) → AgentFlow (3 nodes + animated SVG dashed connectors) → ToolLog (5 entries streamed across 4 phases) → YieldSlider (1.8%–4.0%, locked while running) → ExecutionReceipt (post-settle). State machine in `lib/swarm-machine.ts`, total run 5s. Vendored 3 Kokonut UI components as inline fallbacks into `components/ui/` (install URLs hit Pro/404 so inline implementations were used instead of shadcn registry). Initiate Swarm CTA inside the Execution node, doubles as Reset after settled. Skipped 21st.dev "Agent Plan" — hand-rolled SVG flow stayed truer to our blue/yellow palette. Wiring to Vercel AI SDK v6 is Phase 5; the ToolLog and AgentFlow already key off a `phase` prop, so swap-in is single-source. Slider uses `@base-ui/react` (not Radix); `onValueChange` receives `readonly number[]` so cast required in yield-slider.tsx. (Claude)
 - **2026-04-25** — Phase 2 done. Dashboard at `/dashboard` renders sidebar + topbar (with merchant/wholesaler mode switch) + KPI strip + Liquidity chart (recharts, animated, SYS.COORD telemetry via onMouseMove/activePayload) + Escrow table (5 rows, status pills) + arbitrage banner (mode-aware copy) + swarm placeholder (right column). Brand tokens applied per design.md §3, fonts loaded (Bricolage / JetBrains Mono / Instrument Serif / Geist) via next/font. `motion` library installed. Mock data centralized in `lib/mock-data.ts` — swap point for Supabase in Phase 6. ESLint flat config added (`eslint.config.mjs`) because Next.js 16 dropped `next lint` subcommand; lint script updated to `eslint app components lib`. (Claude)
 - **2026-04-25** — Phase 1 done. Routes live: `/` → redirects to `/dashboard`; `/dashboard` and `/mobile-mock` both resolve. Mobile mock has an isolated layout (no global chrome). TypeScript clean. (Claude)
