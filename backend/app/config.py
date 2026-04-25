@@ -1,5 +1,6 @@
-from pydantic_settings import BaseSettings
 from typing import Optional
+
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
@@ -24,12 +25,12 @@ class Settings(BaseSettings):
     alibaba_region: str = "cn-hangzhou"
 
     # OSS Configuration
-    alibaba_oss_bucket: str
-    alibaba_oss_endpoint: str
+    alibaba_oss_bucket: Optional[str] = None
+    alibaba_oss_endpoint: Optional[str] = None
 
     # SMS Configuration
-    alibaba_sms_sign_name: str
-    alibaba_sms_template_id: str
+    alibaba_sms_sign_name: Optional[str] = None
+    alibaba_sms_template_id: Optional[str] = None
 
     # Email Configuration
     alibaba_email_account_name: Optional[str] = None
@@ -38,9 +39,11 @@ class Settings(BaseSettings):
     api_host: str = "127.0.0.1"
     api_port: int = 8000
 
-    class Config:
-        env_file = ".env"
-        case_sensitive = False
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        case_sensitive=False,
+        extra="ignore",
+    )
 
 
 settings = Settings()  # type: ignore
