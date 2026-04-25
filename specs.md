@@ -30,30 +30,26 @@ We are deploying an Agentic Parametric Web2 Escrow to act as an autonomous finan
 - **Privacy-Preserving Insights:** The Wholesaler's AI analyzes their MSME clients' financial health using TNG's internal alternative data (GO+ balances, QR velocity) _without_ exposing raw data to the wholesaler.
 - **The "Instant Liquidity" Trigger:** When the wholesaler needs cash to pay their own suppliers, they click one button. Their AI autonomously sends targeted offers strictly to healthy MSMEs: _"Take a 2% discount to release your escrow payment today instead of waiting 14 days."_ \* **Automated Settlement:** If the MSME's AI calculates the arbitrage is favorable, the escrow is instantly released, liquidating the wholesaler's receivables on demand.
 
-## 4. UI/UX Specifications (The "Dual-Reality" Layout & Generative UI)
+## 4. UI/UX Specifications (Split-Window Demo Architecture)
+The live demo will utilize a split-browser window setup: 20% of the screen running the Mobile Route (`/mobile-mock`), and 80% running the Desktop Dashboard Route (`/dashboard`). 
 
-To effectively demonstrate a B2B two-sided marketplace alongside an AI layer, the UI utilizes a strictly managed, three-zone visual hierarchy on a single widescreen view. Do not build disconnected pages.
+### 4.1 The Mobile Route (`/mobile-mock`)
+* A standalone web page simulating a smartphone screen using a fixed aspect ratio and Tailwind CSS device bezels. 
+* It actively listens for WebSockets or state changes from the backend. When the Wholesaler AI executes an action, this route renders the incoming push notification and "Accept" button for Ahmad.
 
-### 4.1 Zone 1: The Main Stage (Left - 60% Width)
+### 4.2 The Desktop Dashboard Route (`/dashboard`)
+This is the primary enterprise Web2 view, split strictly into two internal zones. Do not embed any mobile UI here.
 
-This zone represents the human and business reality. It is split internally to show both the Desktop and Mobile context simultaneously:
-
-- **The Desktop Dashboard:** Displays standard enterprise UI using `shadcn/ui` data tables. For the Wholesaler, it shows their client logistics pipeline and cash flow warnings. For the Merchant, it shows predictive analytics and treasury charts.
-- **The Embedded Mobile Mockup:** Sitting next to the desktop view (but still inside the Left Stage) is a CSS-rendered smartphone UI (using Tailwind CSS mobile bezels). This permanently displays Ahmad's "TNG App" view.
-- **The Interaction:** When the Wholesaler clicks a desktop button (e.g., "Offer Discount"), the Embedded Mobile Mockup instantly updates, showing a push notification and an "Accept" button on Ahmad's phone.
-
-### 4.2 Zone 2: The Swarm Command Console (Right - 40% Width)
-
-This zone acts as the transparent "brain" of the AI. It is strictly reserved for Agentic reasoning and tool-calling visualization.
-
-- **No Chatbots:** Do not use a generic text chat interface.
-- **Generative UI (React Server Components):** When the AI executes a task (e.g., underwriting a BNPL loan or calculating GO+ yield), the Vercel AI SDK streams dynamic, animated React components (built with Kokonut UI and 21st.dev) directly into this console.
-- **Visualizing the Math:** Use interactive widgets here to explain the business logic to the judges. For example, render a dynamic slider showing how the 2% early-payment discount is mathematically superior to waiting 14 days for standard GO+ yield.
+* **Zone 1: The Business Stage (Left - 60% Width):**
+    * *Liquidity Health Chart:* A sleek area chart projecting 30-day cash flow versus upcoming accounts payable.
+    * *Escrow Pipeline Table:* A `shadcn/ui` data table displaying active clients. Key columns: Merchant Entity, Trade Terms (Net-14), Escrow Status (Locked/Pending), and a quick-action "Generate Liquidity" button.
+* **Zone 2: The Swarm Command Console (Right - 40% Width):**
+    * Dedicated exclusively to visualizing the AI's reasoning via Generative UI.
+    * Must render rich, interactive React components (Kokonut UI/21st.dev) stacked vertically, such as JSON parsing blocks, dynamic yield arbitrage sliders, and execution receipts.
 
 ### 4.3 Design Constraints
-
-- **Aesthetic:** "Management Consulting" clean. Use crisp White backgrounds, TNG Corporate Blue headers, and sparse Yellow accents exclusively for highlighting AI actions or critical financial metrics.
-- **Mocking:** Use standard HTML/Tailwind CSS for the mobile device bezel. Use intelligent JSON mocking for external logistics triggers to protect the demo's "Golden Path."
+* **Aesthetic:** "Management Consulting" clean combined with Vercel/Linear modernism. High data-ink ratio, stark contrasts. 
+* **Colors:** Crisp White/Silver backgrounds, TNG Corporate Blue for structure and primary actions, TNG Yellow strictly for highlighting AI agent actions and pulsing visual indicators.
 
 ## 5. Technical Stack (Optimized for Rapid AI-Assisted Development)
 
