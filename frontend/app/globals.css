@@ -20,6 +20,11 @@
   --tng-yellow: #FFD300;
   --tng-yellow-tint: #FFF4B8;
 
+  /* === TNG mobile === */
+  --tng-blue-app: #1A5FE0;
+  --tng-blue-app-deep: #1648B5;
+  --tng-red: #E63B4B;
+
   /* === Functional === */
   --up: #00875A;
   --down: #DE350B;
@@ -75,6 +80,9 @@
   --color-tng-blue-tint: var(--tng-blue-tint);
   --color-tng-yellow: var(--tng-yellow);
   --color-tng-yellow-tint: var(--tng-yellow-tint);
+  --color-tng-blue-app: var(--tng-blue-app);
+  --color-tng-blue-app-deep: var(--tng-blue-app-deep);
+  --color-tng-red: var(--tng-red);
   --color-up: var(--up);
   --color-down: var(--down);
 }
