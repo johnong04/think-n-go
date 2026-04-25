@@ -71,24 +71,23 @@ export function SwarmConsole({ phase, onPhaseChange }: Props) {
           </span>
         </div>
 
-        <AgentFlow
-          phase={phase}
-          ctaForExecute={
-            <button
-              type="button"
-              onClick={phase === "settled" ? reset : phase === "idle" ? runSequence : undefined}
-              disabled={isRunning}
-              className={cn(
-                "inline-flex w-full items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold transition-colors",
-                phase === "settled" ? "bg-ink text-paper hover:bg-tng-blue-deep" : "bg-tng-yellow text-ink hover:bg-tng-yellow/90",
-                isRunning && "cursor-not-allowed opacity-60"
-              )}
-            >
-              {phase === "settled" ? <RotateCcw className="size-4" /> : <Play className="size-4" />}
-              {ctaLabel}
-            </button>
-          }
-        />
+        <AgentFlow phase={phase} />
+
+        <div className="mt-2">
+          <button
+            type="button"
+            onClick={phase === "settled" ? reset : phase === "idle" ? runSequence : undefined}
+            disabled={isRunning}
+            className={cn(
+              "inline-flex w-full items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold transition-colors",
+              phase === "settled" ? "bg-ink text-paper hover:bg-tng-blue-deep" : "bg-tng-yellow text-ink hover:bg-tng-yellow/90",
+              isRunning && "cursor-not-allowed opacity-60"
+            )}
+          >
+            {phase === "settled" ? <RotateCcw className="size-4" /> : <Play className="size-4" />}
+            {ctaLabel}
+          </button>
+        </div>
 
         <ToolLog phase={phase} />
 
