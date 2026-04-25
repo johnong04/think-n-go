@@ -14,10 +14,8 @@ type Props = {
 export function FlowConnector({ state, variant = "default" }: Props) {
   const isHandoff = variant === "handoff";
   const height = isHandoff ? 64 : 44;
-  // Same-agent: subtle S-curve. Handoff: wider sweep.
-  const path = isHandoff
-    ? `M 50,4 C 28,${height * 0.4} 72,${height * 0.6} 50,${height - 4}`
-    : `M 50,4 C 60,${height * 0.45} 40,${height * 0.55} 50,${height - 4}`;
+  // Clean straight vertical line — no curve.
+  const path = `M 50,4 L 50,${height - 4}`;
 
   const stroke =
     state === "active"
@@ -66,9 +64,9 @@ export function FlowConnector({ state, variant = "default" }: Props) {
           fill="none"
           stroke={stroke}
           strokeWidth={isHandoff ? 2.5 : 2}
-          strokeDasharray={state === "active" || isHandoff ? "5 5" : "0"}
+          strokeDasharray="5 5"
           markerEnd={`url(#${arrowId})`}
-          className={cn(state === "active" && "animate-dash")}
+          className="animate-dash"
         />
         {state === "active" && (
           <circle r="3.5" fill="var(--tng-yellow)">
