@@ -6,7 +6,7 @@ import { AITextLoading } from "@/components/ui/ai-text-loading";
 import { toolCalls } from "@/lib/mock-data";
 import type { SwarmPhase } from "@/lib/swarm-machine";
 
-const PHASE_ORDER: SwarmPhase[] = ["idle", "ingesting", "optimizing", "executing", "settled"];
+const PHASE_ORDER: SwarmPhase[] = ["idle", "t1", "t2", "t3", "t4", "t5", "settled"];
 
 function visibleEntries(phase: SwarmPhase) {
   const reachedIdx = PHASE_ORDER.indexOf(phase);
