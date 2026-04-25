@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Topbar } from "./topbar";
-import { SwarmPlaceholder } from "./swarm-placeholder";
+import { SwarmConsole } from "./swarm-console";
 import { ArbitrageBanner } from "./arbitrage-banner";
 import type { Mode } from "@/lib/mock-data";
 
@@ -21,7 +21,7 @@ export function DashboardShell({ staticContent }: Props) {
           {staticContent}
           <ArbitrageBanner mode={mode} />
         </main>
-        <SwarmPlaceholder />
+        <SwarmConsole />
       </div>
     </div>
   );
