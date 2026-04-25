@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence } from "motion/react";
 import { Play, RotateCcw } from "lucide-react";
 import { BeamsBackground } from "@/components/ui/beams-background";
@@ -12,10 +12,15 @@ import { ExecutionReceipt } from "./execution-receipt";
 import { yieldOffer } from "@/lib/mock-data";
 import { PHASE_TIMINGS_MS, TOTAL_RUN_MS } from "@/lib/swarm-machine";
 import type { SwarmPhase } from "@/lib/swarm-machine";
+import { useDemoBus } from "@/lib/demo-bus";
 import { cn } from "@/lib/utils";
 
-export function SwarmConsole() {
-  const [phase, setPhase] = useState<SwarmPhase>("idle");
+type Props = {
+  phase: SwarmPhase;
+  onPhaseChange: (next: SwarmPhase) => void;
+};
+
+export function SwarmConsole({ phase, onPhaseChange }: Props) {
   const [yieldPct, setYieldPct] = useState<number>(yieldOffer.default);
   const timeouts = useRef<ReturnType<typeof setTimeout>[]>([]);
 
@@ -24,20 +29,27 @@ export function SwarmConsole() {
     timeouts.current = [];
   }
 
-  function runSequence() {
+  const runSequence = useCallback(() => {
     clearTimers();
-    setPhase("ingesting");
-    timeouts.current.push(setTimeout(() => setPhase("optimizing"), PHASE_TIMINGS_MS.optimizing));
-    timeouts.current.push(setTimeout(() => setPhase("executing"),  PHASE_TIMINGS_MS.executing));
-    timeouts.current.push(setTimeout(() => setPhase("settled"),    PHASE_TIMINGS_MS.settled));
-  }
+    onPhaseChange("ingesting");
+    timeouts.current.push(setTimeout(() => onPhaseChange("optimizing"), PHASE_TIMINGS_MS.optimizing));
+    timeouts.current.push(setTimeout(() => onPhaseChange("executing"),  PHASE_TIMINGS_MS.executing));
+    timeouts.current.push(setTimeout(() => onPhaseChange("settled"),    PHASE_TIMINGS_MS.settled));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [onPhaseChange]);
 
   function reset() {
     clearTimers();
-    setPhase("idle");
+    onPhaseChange("idle");
   }
 
   useEffect(() => () => clearTimers(), []);
+
+  useDemoBus(useCallback((event) => {
+    if (event.type === "merchant:offer-accepted" && phase === "idle") {
+      runSequence();
+    }
+  }, [phase, runSequence]));
 
   const isRunning = phase !== "idle" && phase !== "settled";
   const ctaLabel = phase === "idle" ? "Initiate Swarm" : phase === "settled" ? "Run Again" : "Running…";
