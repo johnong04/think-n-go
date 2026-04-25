@@ -11,3 +11,7 @@ yarn-error.log*
 pnpm-debug.log*
 
 *.tsbuildinfo
+
+venv/
+__pycache__/
+.vscode
