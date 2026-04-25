@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "motion/react";
-import { ArrowDownToLine, Clock, Coins, Lock } from "lucide-react";
+import { ArrowDownToLine, Clock, Coins, FileText, Lock, ReceiptText } from "lucide-react";
 import { TngAppHeader } from "./tng-app-header";
 import { TngCard } from "./tng-card";
 import { TngButton } from "./tng-button";
@@ -24,6 +24,9 @@ export function ScreenMerchantContract({
 }: Props) {
   const totalYield = draft.dailyYieldRm * draft.termDays;
   const ownPct = draft.totalRm > 0 ? (draft.ownFundsRm / draft.totalRm) * 100 : 0;
+  const items = draft.invoiceItems ?? [];
+  const shownItems = items.slice(0, 3);
+  const remainingItemCount = Math.max(0, items.length - shownItems.length);
 
   return (
     <>
@@ -55,6 +58,70 @@ export function ScreenMerchantContract({
             ) : null}
           </TngCard>
         </motion.div>
+
+        <TngCard className="flex flex-col gap-3">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+                Attached invoice
+              </p>
+              <p className="mt-1 font-display text-xl font-bold text-ink">
+                {draft.invoiceNum || "Invoice draft"}
+              </p>
+              <p className="mt-0.5 text-[11px] text-muted-foreground">
+                {draft.issueDate || "Issue date pending"} - {draft.dueDate || `Net-${draft.termDays}`}
+              </p>
+            </div>
+            <div className="grid size-11 place-items-center rounded-2xl bg-tng-blue-app/10 text-tng-blue-app">
+              <FileText className="size-5" />
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-stroke-soft bg-paper-grid p-3">
+            <div className="flex items-start justify-between gap-3 border-b border-stroke-soft pb-2">
+              <div>
+                <p className="text-[10px] uppercase tracking-[0.08em] text-muted-foreground">From</p>
+                <p className="text-[12px] font-semibold text-ink">{draft.wholesalerName}</p>
+                {draft.supplierLocation ? (
+                  <p className="text-[10px] text-muted-foreground">{draft.supplierLocation}</p>
+                ) : null}
+              </div>
+              <div className="text-right">
+                <p className="text-[10px] uppercase tracking-[0.08em] text-muted-foreground">To</p>
+                <p className="text-[12px] font-semibold text-ink">
+                  {draft.receiverName || "Merchant"}
+                </p>
+                {draft.receiverLocation ? (
+                  <p className="text-[10px] text-muted-foreground">{draft.receiverLocation}</p>
+                ) : null}
+              </div>
+            </div>
+
+            <div className="mt-2 space-y-2">
+              {shownItems.length > 0 ? (
+                shownItems.map((item, index) => (
+                  <InvoiceItemRow key={`${item.productName}-${index}`} item={item} />
+                ))
+              ) : (
+                <p className="py-2 text-[11px] text-muted-foreground">
+                  No line items attached yet. Sync an invoice draft from the invoice page.
+                </p>
+              )}
+              {remainingItemCount > 0 ? (
+                <p className="text-[10px] font-medium text-muted-foreground">
+                  +{remainingItemCount} more item{remainingItemCount === 1 ? "" : "s"}
+                </p>
+              ) : null}
+            </div>
+
+            <div className="mt-3 flex items-center justify-between border-t border-stroke-soft pt-2">
+              <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+                Invoice total
+              </span>
+              <span className="font-display text-lg font-bold text-ink">{fmtRm(draft.totalRm, 2)}</span>
+            </div>
+          </div>
+        </TngCard>
 
         <TngCard className="flex flex-col gap-3">
           <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
@@ -118,7 +185,10 @@ export function ScreenMerchantContract({
           />
           <Row icon={<Lock className="size-4" />} label="Settlement" value={draft.dispatchEta} />
           {draft.description ? (
-            <Row icon={<Lock className="size-4" />} label="Invoice note" value={draft.description} />
+            <Row icon={<ReceiptText className="size-4" />} label="Invoice note" value={draft.description} />
+          ) : null}
+          {draft.notes ? (
+            <Row icon={<ReceiptText className="size-4" />} label="Supplier note" value={draft.notes} />
           ) : null}
         </TngCard>
 
@@ -133,6 +203,26 @@ export function ScreenMerchantContract({
         </div>
       </div>
     </>
+  );
+}
+
+function InvoiceItemRow({
+  item,
+}: {
+  item: { productName: string; quantity: number; unitPrice: number };
+}) {
+  const lineTotal = item.quantity * item.unitPrice;
+
+  return (
+    <div className="grid grid-cols-[1fr_auto] gap-2 text-[11px]">
+      <div className="min-w-0">
+        <p className="truncate font-semibold text-ink">{item.productName}</p>
+        <p className="text-muted-foreground">
+          {item.quantity} x {fmtRm(item.unitPrice, 2)}
+        </p>
+      </div>
+      <p className="font-semibold tabular-nums text-ink">{fmtRm(lineTotal, 2)}</p>
+    </div>
   );
 }
 

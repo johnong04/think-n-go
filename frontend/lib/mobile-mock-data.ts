@@ -31,15 +31,27 @@ export type EscrowDraft = {
   invoiceNum?: string;
   invoiceRef?: string | null;
   wholesalerName: string;
+  supplierPhone?: string | null;
+  supplierLocation?: string | null;
   totalRm: number;
   ownFundsRm: number;
   bnplRm: number;
   termDays: number;
+  issueDate?: string | null;
+  dueDate?: string | null;
   dailyYieldRm: number;
   repaymentSweepPct: number;
   dispatchEta: string;
   description?: string | null;
   receiverName?: string | null;
+  receiverPhone?: string | null;
+  receiverLocation?: string | null;
+  invoiceItems?: Array<{
+    productName: string;
+    quantity: number;
+    unitPrice: number;
+  }>;
+  notes?: string | null;
 };
 
 export const escrowDraft: EscrowDraft = {
@@ -47,15 +59,25 @@ export const escrowDraft: EscrowDraft = {
   invoiceNum: "INV-TNG-DEMO",
   invoiceRef: "QR-DEMO-7142",
   wholesalerName: "Hartono Manufacturing",
+  supplierPhone: "+60 3-2201 8840",
+  supplierLocation: "Kuala Lumpur, Malaysia",
   totalRm: 1000,
   ownFundsRm: 500,
   bnplRm: 500,
   termDays: 14,
+  issueDate: "2026-04-26",
+  dueDate: "2026-05-10",
   dailyYieldRm: 0.34,
   repaymentSweepPct: 5,
   dispatchEta: "Same-day dispatch",
   description: "Pre-contract commercial invoice",
   receiverName: "Ahmad bin Yusof",
+  receiverPhone: "+60 12-345 6789",
+  receiverLocation: "Selangor, Malaysia",
+  invoiceItems: [
+    { productName: "Cooking oil cartons", quantity: 2, unitPrice: 500 },
+  ],
+  notes: "Review item details before locking escrow.",
 };
 
 export type ClientRow = {

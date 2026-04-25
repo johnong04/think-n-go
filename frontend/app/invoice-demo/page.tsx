@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { motion } from "motion/react";
 import {
@@ -52,6 +52,22 @@ function persistAndSyncDraft(draft: InvoiceDraft) {
     window.localStorage.setItem(ACTIVE_INVOICE_KEY, JSON.stringify(draft));
   }
   publish({ type: "invoice:draft-updated", payload: draft });
+}
+
+function recalculateDraft(draft: InvoiceDraft): InvoiceDraft {
+  const subtotal = Number(
+    draft.items.reduce((sum, item) => sum + lineTotal(item), 0).toFixed(2)
+  );
+  const total = Number(
+    (subtotal + draft.tax_rm + draft.shipping_rm + draft.adjustment_rm).toFixed(2)
+  );
+  const safeTotal = Math.max(0, total);
+  return {
+    ...draft,
+    subtotal,
+    total: safeTotal,
+    principal_amount: safeTotal,
+  };
 }
 
 function emptyDraft(): InvoiceDraft {
@@ -106,6 +122,7 @@ export default function InvoiceDemoPage() {
   const [loading, setLoading] = useState<"draft" | "revise" | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [syncedAt, setSyncedAt] = useState<string | null>(null);
+  const [hasMounted, setHasMounted] = useState(false);
 
   const computedSubtotal = useMemo(
     () => draft.items.reduce((sum, item) => sum + lineTotal(item), 0),
@@ -121,14 +138,26 @@ export default function InvoiceDemoPage() {
     setSyncedAt(new Date().toLocaleTimeString("en-MY", { hour: "2-digit", minute: "2-digit" }));
   }
 
+  function updateDraft(updater: (current: InvoiceDraft) => InvoiceDraft) {
+    setDraft((current) => recalculateDraft(updater(current)));
+  }
+
+  useEffect(() => {
+    setHasMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!hasMounted) return;
+    syncDraft(draft);
+  }, [draft, hasMounted]);
+
   async function handleCreateDraft() {
     setLoading("draft");
     setError(null);
     try {
       const response = await createInvoiceDraft(prompt, defaultContext);
-      setDraft(response.draft);
-      setHistory((prev) => [`Generated draft from prompt.`, ...prev].slice(0, 5));
-      syncDraft(response.draft);
+      setDraft(recalculateDraft(response.draft));
+      setHistory((prev) => ["Generated draft from prompt.", ...prev].slice(0, 5));
     } catch (createError) {
       setError(
         createError instanceof ApiError
@@ -146,10 +175,9 @@ export default function InvoiceDemoPage() {
     setError(null);
     try {
       const response = await reviseInvoiceDraft(draft, instruction);
-      setDraft(response.draft);
+      setDraft(recalculateDraft(response.draft));
       setHistory((prev) => [`Revised: ${instruction}`, ...prev].slice(0, 5));
       setInstruction("");
-      syncDraft(response.draft);
     } catch (reviseError) {
       setError(
         reviseError instanceof ApiError
@@ -191,7 +219,12 @@ export default function InvoiceDemoPage() {
           transition={{ duration: 0.35 }}
           className="min-w-0"
         >
-          <InvoicePaper draft={draft} computedSubtotal={computedSubtotal} computedTotal={computedTotal} />
+          <InvoicePaper
+            draft={draft}
+            computedSubtotal={computedSubtotal}
+            computedTotal={computedTotal}
+            onChange={updateDraft}
+          />
         </motion.section>
 
         <aside className="flex flex-col gap-4">
@@ -265,18 +298,11 @@ export default function InvoiceDemoPage() {
               {syncedAt ? <CheckCircle2 className="size-4 text-up" /> : null}
             </div>
             <p className="mt-3 text-sm leading-6 text-muted-foreground">
-              The current invoice can prefill the merchant scan and contract screens with
-              supplier, invoice number, amount, and terms.
+              Every document edit is automatically broadcast to the merchant scan and contract
+              screens with supplier, invoice number, amount, and terms.
             </p>
-            <button
-              type="button"
-              onClick={() => syncDraft()}
-              className="mt-4 inline-flex h-10 w-full items-center justify-center rounded-full border border-tng-blue bg-white px-4 text-sm font-semibold text-tng-blue transition-colors hover:bg-tng-blue/5"
-            >
-              Sync to mobile demo
-            </button>
             <p className="mt-2 text-[11px] text-muted-foreground">
-              {syncedAt ? `Last synced ${syncedAt}` : "Not synced in this browser session."}
+              {syncedAt ? `Auto-synced ${syncedAt}` : "Auto-sync will begin after the page loads."}
             </p>
           </section>
 
@@ -304,11 +330,45 @@ function InvoicePaper({
   draft,
   computedSubtotal,
   computedTotal,
+  onChange,
 }: {
   draft: InvoiceDraft;
   computedSubtotal: number;
   computedTotal: number;
+  onChange: (updater: (current: InvoiceDraft) => InvoiceDraft) => void;
 }) {
+  function update<K extends keyof InvoiceDraft>(key: K, value: InvoiceDraft[K]) {
+    onChange((current) => ({ ...current, [key]: value }));
+  }
+
+  function updateSupplier(key: keyof InvoiceDraft["supplier"], value: string | null) {
+    onChange((current) => ({
+      ...current,
+      supplier: { ...current.supplier, [key]: value },
+    }));
+  }
+
+  function updateReceiver(key: keyof InvoiceDraft["receiver"], value: string | null) {
+    onChange((current) => ({
+      ...current,
+      receiver: { ...current.receiver, [key]: value },
+    }));
+  }
+
+  function updateTerms(key: keyof InvoiceDraft["terms"], value: string | null) {
+    onChange((current) => ({
+      ...current,
+      terms: { ...current.terms, [key]: value },
+    }));
+  }
+
+  function updateItem(index: number, patch: Partial<InvoiceItem>) {
+    onChange((current) => ({
+      ...current,
+      items: current.items.map((item, i) => (i === index ? { ...item, ...patch } : item)),
+    }));
+  }
+
   return (
     <div className="mx-auto min-h-[1120px] max-w-[920px] bg-white px-12 py-12 shadow-[0_24px_80px_rgba(15,23,42,0.16)]">
       <header className="flex items-start justify-between border-b-2 border-ink pb-8">
@@ -323,33 +383,57 @@ function InvoicePaper({
               escrow ready invoice
             </span>
           </div>
-          <p className="mt-5 max-w-md text-sm leading-6 text-muted-foreground">
-            {draft.description || "Commercial invoice prepared for review before escrow funding."}
-          </p>
+          <EditableTextarea
+            value={draft.description || ""}
+            placeholder="Commercial invoice prepared for review before escrow funding."
+            className="mt-5 min-h-16 max-w-md text-sm leading-6 text-muted-foreground"
+            onChange={(value) => update("description", value || null)}
+          />
         </div>
         <div className="text-right">
           <h2 className="font-display text-5xl font-bold tracking-tight">Invoice</h2>
-          <p className="mt-3 font-mono text-sm uppercase tracking-[0.08em] text-muted-foreground">
-            {draft.invoice_num}
-          </p>
-          {draft.invoice_ref ? (
-            <p className="mt-1 font-mono text-xs uppercase tracking-[0.08em] text-muted-foreground">
-              Ref {draft.invoice_ref}
-            </p>
-          ) : null}
+          <EditableInput
+            value={draft.invoice_num}
+            className="mt-3 text-right font-mono text-sm uppercase tracking-[0.08em] text-muted-foreground"
+            onChange={(value) => update("invoice_num", value)}
+          />
+          <div className="mt-1 flex items-center justify-end gap-1 font-mono text-xs uppercase tracking-[0.08em] text-muted-foreground">
+            <span>Ref</span>
+            <EditableInput
+              value={draft.invoice_ref || ""}
+              placeholder="Optional"
+              className="w-36 text-right"
+              onChange={(value) => update("invoice_ref", value || null)}
+            />
+          </div>
         </div>
       </header>
 
       <section className="grid grid-cols-2 gap-10 border-b border-stroke-soft py-8">
-        <PartyBlock title="Bill from" party={draft.supplier} />
-        <PartyBlock title="Bill to" party={draft.receiver} />
+        <PartyBlock title="Bill from" party={draft.supplier} onChange={updateSupplier} />
+        <PartyBlock title="Bill to" party={draft.receiver} onChange={updateReceiver} />
       </section>
 
       <section className="grid grid-cols-4 gap-4 border-b border-stroke-soft py-6">
-        <Meta label="Issue date" value={draft.issue_date} />
-        <Meta label="Due date" value={draft.terms.due_date || "To confirm"} />
-        <Meta label="Terms" value={draft.terms.net_days} />
-        <Meta label="Payment" value={draft.terms.payment_method} />
+        <Meta label="Issue date">
+          <EditableInput value={draft.issue_date} onChange={(value) => update("issue_date", value)} />
+        </Meta>
+        <Meta label="Due date">
+          <EditableInput
+            value={draft.terms.due_date || ""}
+            placeholder="To confirm"
+            onChange={(value) => updateTerms("due_date", value || null)}
+          />
+        </Meta>
+        <Meta label="Terms">
+          <EditableInput value={draft.terms.net_days} onChange={(value) => updateTerms("net_days", value)} />
+        </Meta>
+        <Meta label="Payment">
+          <EditableInput
+            value={draft.terms.payment_method}
+            onChange={(value) => updateTerms("payment_method", value)}
+          />
+        </Meta>
       </section>
 
       <section className="py-8">
@@ -366,10 +450,26 @@ function InvoicePaper({
             {draft.items.map((item, index) => (
               <tr key={`${item.product_name}-${index}`} className="border-b border-stroke-soft">
                 <td className="py-4 pr-4">
-                  <p className="font-medium text-ink">{item.product_name}</p>
+                  <EditableInput
+                    value={item.product_name}
+                    className="w-full font-medium text-ink"
+                    onChange={(value) => updateItem(index, { product_name: value })}
+                  />
                 </td>
-                <td className="py-4 text-right tabular-nums">{item.quantity}</td>
-                <td className="py-4 text-right tabular-nums">{formatRm(item.unit_price)}</td>
+                <td className="py-4 text-right tabular-nums">
+                  <EditableNumber
+                    value={item.quantity}
+                    className="w-20 text-right"
+                    onChange={(value) => updateItem(index, { quantity: value })}
+                  />
+                </td>
+                <td className="py-4 text-right tabular-nums">
+                  <EditableNumber
+                    value={item.unit_price}
+                    className="w-24 text-right"
+                    onChange={(value) => updateItem(index, { unit_price: value })}
+                  />
+                </td>
                 <td className="py-4 text-right font-semibold tabular-nums">
                   {formatRm(lineTotal(item))}
                 </td>
@@ -382,16 +482,31 @@ function InvoicePaper({
       <section className="grid grid-cols-[1fr_320px] gap-8 border-t border-stroke-soft pt-6">
         <div className="text-sm leading-6 text-muted-foreground">
           <p className="font-semibold uppercase tracking-[0.08em] text-ink">Terms and notes</p>
-          <p className="mt-3">{draft.terms.delivery_terms || "Delivery terms to be confirmed."}</p>
-          {draft.terms.late_fee_note ? <p className="mt-2">{draft.terms.late_fee_note}</p> : null}
-          {draft.notes ? <p className="mt-2">{draft.notes}</p> : null}
+          <EditableTextarea
+            value={draft.terms.delivery_terms || ""}
+            placeholder="Delivery terms to be confirmed."
+            className="mt-3 min-h-12"
+            onChange={(value) => updateTerms("delivery_terms", value || null)}
+          />
+          <EditableTextarea
+            value={draft.terms.late_fee_note || ""}
+            placeholder="Late fee note"
+            className="mt-2 min-h-10"
+            onChange={(value) => updateTerms("late_fee_note", value || null)}
+          />
+          <EditableTextarea
+            value={draft.notes || ""}
+            placeholder="Additional notes"
+            className="mt-2 min-h-12"
+            onChange={(value) => update("notes", value || null)}
+          />
         </div>
 
         <div className="space-y-3 text-sm">
           <TotalRow label="Subtotal" value={computedSubtotal} />
-          <TotalRow label="Tax" value={draft.tax_rm} />
-          <TotalRow label="Shipping" value={draft.shipping_rm} />
-          <TotalRow label="Adjustment" value={draft.adjustment_rm} />
+          <EditableTotalRow label="Tax" value={draft.tax_rm} onChange={(value) => update("tax_rm", value)} />
+          <EditableTotalRow label="Shipping" value={draft.shipping_rm} onChange={(value) => update("shipping_rm", value)} />
+          <EditableTotalRow label="Adjustment" value={draft.adjustment_rm} onChange={(value) => update("adjustment_rm", value)} />
           <div className="border-t-2 border-ink pt-4">
             <div className="flex items-baseline justify-between">
               <span className="font-semibold uppercase tracking-[0.08em]">Total due</span>
@@ -418,27 +533,57 @@ function InvoicePaper({
   );
 }
 
-function PartyBlock({ title, party }: { title: string; party: InvoiceDraft["supplier"] }) {
+function PartyBlock({
+  title,
+  party,
+  onChange,
+}: {
+  title: string;
+  party: InvoiceDraft["supplier"];
+  onChange: (key: keyof InvoiceDraft["supplier"], value: string | null) => void;
+}) {
   return (
     <div>
       <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-muted-foreground">
         {title}
       </p>
-      <p className="mt-3 font-display text-xl font-bold">{party.name}</p>
-      {party.location ? <p className="mt-2 text-sm text-muted-foreground">{party.location}</p> : null}
-      {party.phone ? <p className="mt-1 text-sm text-muted-foreground">{party.phone}</p> : null}
-      {party.tax_id ? <p className="mt-1 text-sm text-muted-foreground">Tax ID {party.tax_id}</p> : null}
+      <EditableInput
+        value={party.name}
+        className="mt-3 w-full font-display text-xl font-bold"
+        onChange={(value) => onChange("name", value)}
+      />
+      <EditableInput
+        value={party.location || ""}
+        placeholder="Location"
+        className="mt-2 w-full text-sm text-muted-foreground"
+        onChange={(value) => onChange("location", value || null)}
+      />
+      <EditableInput
+        value={party.phone || ""}
+        placeholder="Phone"
+        className="mt-1 w-full text-sm text-muted-foreground"
+        onChange={(value) => onChange("phone", value || null)}
+      />
+      <div className="mt-1 flex items-center gap-1 text-sm text-muted-foreground">
+        <span>Tax ID</span>
+        <EditableInput
+          value={party.tax_id || ""}
+          placeholder="Optional"
+          className="flex-1"
+          onChange={(value) => onChange("tax_id", value || null)}
+        />
+      </div>
     </div>
   );
 }
 
-function Meta({ label, value }: { label: string; value: string }) {
+function Meta({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div>
       <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-muted-foreground">
         {label}
       </p>
-      <p className="mt-2 text-sm font-semibold text-ink">{value}</p>
+      <div className="mt-2 text-sm font-semibold text-ink">{children}</div>
     </div>
   );
 }
@@ -449,5 +594,88 @@ function TotalRow({ label, value }: { label: string; value: number }) {
       <span className="text-muted-foreground">{label}</span>
       <span className="font-medium tabular-nums">{formatRm(value)}</span>
     </div>
+  );
+}
+
+function EditableTotalRow({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: number;
+  onChange: (value: number) => void;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-4">
+      <span className="text-muted-foreground">{label}</span>
+      <EditableNumber
+        value={value}
+        className="w-28 text-right font-medium tabular-nums"
+        onChange={onChange}
+      />
+    </div>
+  );
+}
+
+function EditableInput({
+  value,
+  placeholder,
+  className = "",
+  onChange,
+}: {
+  value: string;
+  placeholder?: string;
+  className?: string;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <input
+      value={value}
+      placeholder={placeholder}
+      onChange={(event) => onChange(event.target.value)}
+      className={`min-w-0 rounded-sm border border-transparent bg-transparent px-1 py-0.5 outline-none transition-colors placeholder:text-muted-foreground/60 hover:border-stroke-soft focus:border-tng-blue focus:bg-paper ${className}`}
+    />
+  );
+}
+
+function EditableTextarea({
+  value,
+  placeholder,
+  className = "",
+  onChange,
+}: {
+  value: string;
+  placeholder?: string;
+  className?: string;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <textarea
+      value={value}
+      placeholder={placeholder}
+      onChange={(event) => onChange(event.target.value)}
+      className={`w-full resize-none rounded-sm border border-transparent bg-transparent px-1 py-0.5 outline-none transition-colors placeholder:text-muted-foreground/60 hover:border-stroke-soft focus:border-tng-blue focus:bg-paper ${className}`}
+    />
+  );
+}
+
+function EditableNumber({
+  value,
+  className = "",
+  onChange,
+}: {
+  value: number;
+  className?: string;
+  onChange: (value: number) => void;
+}) {
+  return (
+    <input
+      type="number"
+      step="0.01"
+      value={Number.isFinite(value) ? value : 0}
+      onChange={(event) => onChange(Number(event.target.value || 0))}
+      className={`min-w-0 rounded-sm border border-transparent bg-transparent px-1 py-0.5 outline-none transition-colors hover:border-stroke-soft focus:border-tng-blue focus:bg-paper ${className}`}
+    />
   );
 }

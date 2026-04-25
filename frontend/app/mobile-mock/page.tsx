@@ -37,14 +37,27 @@ function buildEscrowDraft(summary: MsmeDemandPressureSummary | null, invoice: In
     invoiceNum: invoice?.invoice_num ?? escrowDraft.invoiceNum,
     invoiceRef: invoice?.invoice_ref ?? escrowDraft.invoiceRef,
     wholesalerName: supplierName,
+    supplierPhone: invoice?.supplier.phone ?? escrowDraft.supplierPhone,
+    supplierLocation: invoice?.supplier.location ?? escrowDraft.supplierLocation,
     totalRm,
     bnplRm,
     ownFundsRm,
     termDays: parseNetDays(invoice?.terms.net_days),
+    issueDate: invoice?.issue_date ?? escrowDraft.issueDate,
+    dueDate: invoice?.terms.due_date ?? escrowDraft.dueDate,
     repaymentSweepPct: 5,
     dispatchEta: invoice?.terms.delivery_terms || escrowDraft.dispatchEta,
     description: invoice?.description || invoice?.notes || escrowDraft.description,
     receiverName: invoice?.receiver.name || escrowDraft.receiverName,
+    receiverPhone: invoice?.receiver.phone ?? escrowDraft.receiverPhone,
+    receiverLocation: invoice?.receiver.location ?? escrowDraft.receiverLocation,
+    invoiceItems:
+      invoice?.items.map((item) => ({
+        productName: item.product_name,
+        quantity: item.quantity,
+        unitPrice: item.unit_price,
+      })) ?? escrowDraft.invoiceItems,
+    notes: invoice?.notes ?? escrowDraft.notes,
   };
 }
 
