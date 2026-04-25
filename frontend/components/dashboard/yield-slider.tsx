@@ -25,10 +25,9 @@ export function YieldSlider({ value, onChange, disabled = false }: Props) {
       </header>
 
       <Slider
-        value={[value] as readonly number[]}
+        value={[value]}
         onValueChange={(v) => {
-          const arr = v as readonly number[];
-          onChange(arr[0]);
+          onChange(Array.isArray(v) ? v[0] : (v as number));
         }}
         min={yieldOffer.base}
         max={yieldOffer.max}
