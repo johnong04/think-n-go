@@ -9,8 +9,6 @@ from app.routers import aws, bedrock, alibaba, invoice, msme, msme_insight
 from app.routers import contracts as contracts_router
 from app.db.migrations import create_all_tables
 from app.scheduler import start_scheduler, stop_scheduler
-from backend.app.routers import msme
-from backend.app.services import invoice, msme_insight, msme_insight
 
 logger = logging.getLogger(__name__)
 
