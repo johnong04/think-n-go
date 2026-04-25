@@ -62,6 +62,8 @@ export type ToolMeta = {
   scenarioTag: string;
   /** lucide-react icon name (the consumer imports & maps these) */
   iconKey: "search" | "calculator" | "send" | "brain" | "shield-check";
+  /** Source/engine label shown in the "engine" pill dangling below the tool node (n8n-style). */
+  engine: string;
   /** if present, a reasoning bubble pops up while this tool is active */
   reasoning?: string;
 };
@@ -75,6 +77,7 @@ export const swarmTools: ToolMeta[] = [
     output: "Found 1 match · ESC-7142 · RM 2,450 · NET-14",
     scenarioTag: "scenario A",
     iconKey: "search",
+    engine: "supabase.query",
   },
   {
     phase: "t2",
@@ -84,6 +87,7 @@ export const swarmTools: ToolMeta[] = [
     output: "Optimal: 2.0% · RM 49 vs 14d carry",
     scenarioTag: "scenario A",
     iconKey: "calculator",
+    engine: "deterministic.solver",
   },
   {
     phase: "t3",
@@ -93,6 +97,7 @@ export const swarmTools: ToolMeta[] = [
     output: "→ merchant:ahmad-yusof · {pct: 2.0, expires: 2m}",
     scenarioTag: "scenario A · handoff",
     iconKey: "send",
+    engine: "edge.router",
   },
   {
     phase: "t4",
@@ -102,6 +107,7 @@ export const swarmTools: ToolMeta[] = [
     output: "Net gain RM 46.64 · ACCEPT recommended",
     scenarioTag: "scenario A",
     iconKey: "brain",
+    engine: "openai/gpt-4o",
     reasoning:
       "Wholesaler offers 2.0% (RM 49.00) for early release. Holding 14 days at 1.8% APY ≈ RM 2.36. Discount nets +RM 46.64 vs status quo. Recommendation: ACCEPT.",
   },
@@ -113,6 +119,7 @@ export const swarmTools: ToolMeta[] = [
     output: "ledger 0xa9f3…b21c · status: SETTLED",
     scenarioTag: "scenario A",
     iconKey: "shield-check",
+    engine: "supabase.tx",
   },
 ];
 
