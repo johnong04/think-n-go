@@ -81,7 +81,8 @@ CREATE TABLE IF NOT EXISTS contracts (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     approved_at TIMESTAMPTZ,
     funded_at TIMESTAMPTZ,
-    solved_at TIMESTAMPTZ
+    solved_at TIMESTAMPTZ,
+    settled_at TIMESTAMPTZ
 );
 
 CREATE INDEX IF NOT EXISTS ix_contracts_supplier_id ON contracts (supplier_id);
