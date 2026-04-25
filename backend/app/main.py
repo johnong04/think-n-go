@@ -45,14 +45,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(aws.router, tags=["AWS Services"])
-app.include_router(bedrock.router, tags=["Bedrock AI"])
+app.include_router(aws.router)
+app.include_router(bedrock.router)
 app.include_router(invoice.router)
 app.include_router(msme.router)
 app.include_router(msme_insight.router)
-app.include_router(alibaba.router, tags=["Alibaba Cloud"])
-app.include_router(contracts_router.router, tags=["Contracts"])
-app.include_router(agent.router, tags=["Agent"])
+app.include_router(alibaba.router)
+app.include_router(contracts_router.router)
+app.include_router(agent.router)
 
 
 def custom_openapi():
