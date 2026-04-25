@@ -49,14 +49,14 @@ Hackathon execution plan derived from [specs.md](specs.md). Frontend-first, demo
 
 ## Phase 3 — Dashboard "Swarm Command Console" zone (right 40%)
 
-- [ ] **3.1** Vertical stack of Generative UI cards
-  - Each card = one tool call. Animated entry, monospace tool name, JSON input collapsible, output rendered as either text or a richer component.
-- [ ] **3.2** Pull 2–3 components from Kokonut UI / 21st.dev for the AI motif
-  - Animated prompt box, dynamic status node, pulsing reasoning indicator. Vendor into `frontend/app/components/ai/`.
-- [ ] **3.3** Yield arbitrage slider (interactive)
-  - Drag = recompute "wholesaler offer vs receivable drag" math live. Tied to the merchant's pretend escrow.
-- [ ] **3.4** Execution receipt card
-  - Final tool call renders a "settled" receipt with timestamp, ledger row hash, and a green check.
+- [x] **3.1** Vertical stack of Generative UI cards
+  - Vertical AgentFlow (3 nodes Data Ingest → Yield Optimizer → Execution) with motion-driven state transitions and tool log streaming entries phase-by-phase.
+- [x] **3.2** Pull 2–3 components from Kokonut UI / 21st.dev for the AI motif
+  - Vendored Kokonut UI: ai-text-loading (tool log streaming text), ai-state-loading (active node reasoning indicator), beams-background (atmospheric backdrop in TNG blue/yellow at 14% opacity).
+- [x] **3.3** Yield arbitrage slider (interactive)
+  - shadcn Slider restyled with yellow track + ink thumb; live delta readout shows RM offer total against base RM 2,450.
+- [x] **3.4** Execution receipt card
+  - ExecutionReceipt slides in on settled phase: ledger hash 0xa9f3b8e21c, discount %, net-to-wholesaler in display font, green success ring.
 
 ## Phase 4 — Mobile push experience
 
@@ -126,6 +126,7 @@ Append-only. When you finish a milestone or learn something a fresh-context agen
 - **YYYY-MM-DD** — what changed / what was learned. (author or agent name)
 -->
 
+- **2026-04-25** — Phase 3 done. Right rail now hosts the SwarmConsole orchestrator: SwarmBadge (active/settled state) → AgentFlow (3 nodes + animated SVG dashed connectors) → ToolLog (5 entries streamed across 4 phases) → YieldSlider (1.8%–4.0%, locked while running) → ExecutionReceipt (post-settle). State machine in `lib/swarm-machine.ts`, total run 5s. Vendored 3 Kokonut UI components as inline fallbacks into `components/ui/` (install URLs hit Pro/404 so inline implementations were used instead of shadcn registry). Initiate Swarm CTA inside the Execution node, doubles as Reset after settled. Skipped 21st.dev "Agent Plan" — hand-rolled SVG flow stayed truer to our blue/yellow palette. Wiring to Vercel AI SDK v6 is Phase 5; the ToolLog and AgentFlow already key off a `phase` prop, so swap-in is single-source. Slider uses `@base-ui/react` (not Radix); `onValueChange` receives `readonly number[]` so cast required in yield-slider.tsx. (Claude)
 - **2026-04-25** — Phase 2 done. Dashboard at `/dashboard` renders sidebar + topbar (with merchant/wholesaler mode switch) + KPI strip + Liquidity chart (recharts, animated, SYS.COORD telemetry via onMouseMove/activePayload) + Escrow table (5 rows, status pills) + arbitrage banner (mode-aware copy) + swarm placeholder (right column). Brand tokens applied per design.md §3, fonts loaded (Bricolage / JetBrains Mono / Instrument Serif / Geist) via next/font. `motion` library installed. Mock data centralized in `lib/mock-data.ts` — swap point for Supabase in Phase 6. ESLint flat config added (`eslint.config.mjs`) because Next.js 16 dropped `next lint` subcommand; lint script updated to `eslint app components lib`. (Claude)
 - **2026-04-25** — Phase 1 done. Routes live: `/` → redirects to `/dashboard`; `/dashboard` and `/mobile-mock` both resolve. Mobile mock has an isolated layout (no global chrome). TypeScript clean. (Claude)
 - **2026-04-25** — Clean slate. Wiped all mock UI and custom CSS from page.tsx and globals.css. globals.css now contains only Tailwind v4 imports + shadcn's generated variables + `body { margin: 0 }`. page.tsx is a blank placeholder. All infra intact: layout.tsx (Geist font), components/ui/*, lib/utils.ts, postcss.config.mjs, components.json, tsconfig paths. TypeScript compiles clean. Ready for Phase 1 design work. (Claude)
