@@ -11,20 +11,23 @@ type Props = {
 
 export function PersonaToggle({ persona, onChange }: Props) {
   return (
-    <div className="mx-5 mt-2 inline-flex w-[calc(100%-2.5rem)] items-center rounded-full bg-white/15 p-[3px] backdrop-blur-sm">
-      {(["merchant", "wholesaler"] as Persona[]).map((p) => (
-        <button
-          key={p}
-          type="button"
-          onClick={() => onChange(p)}
-          className={cn(
-            "h-8 flex-1 rounded-full text-[11px] font-semibold uppercase tracking-[0.08em] transition-colors",
-            persona === p ? "bg-white text-tng-blue-app" : "text-white/70 hover:text-white"
-          )}
-        >
-          {p}
-        </button>
-      ))}
+    <div className="mt-1 flex justify-center">
+      <div className="inline-flex items-center gap-1 rounded-full bg-black/45 p-1 pl-2.5 pr-1 text-[10px] font-mono uppercase tracking-[0.1em] backdrop-blur-md">
+        <span className="text-white/55">demo</span>
+        {(["merchant", "wholesaler"] as Persona[]).map((p) => (
+          <button
+            key={p}
+            type="button"
+            onClick={() => onChange(p)}
+            className={cn(
+              "h-6 rounded-full px-3 transition-colors",
+              persona === p ? "bg-tng-yellow text-ink" : "text-white/70 hover:bg-white/10 hover:text-white"
+            )}
+          >
+            {p}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }

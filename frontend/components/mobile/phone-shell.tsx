@@ -9,16 +9,16 @@ type Props = {
 };
 
 export function PhoneShell({ children, bodyTone = "blue", className }: Props) {
-  const body = bodyTone === "blue" ? "bg-tng-blue-app" : "bg-white";
-
   return (
     <div className="grid min-h-screen place-items-center bg-paper-grid py-8">
       <div
         className={cn(
           "relative flex h-[844px] w-[390px] flex-col overflow-hidden rounded-[44px] border-[10px] border-ink",
-          body,
           className
         )}
+        style={{
+          backgroundColor: bodyTone === "blue" ? "var(--tng-blue-app)" : "#FFFFFF",
+        }}
       >
         <StatusBar />
         <div className="flex flex-1 flex-col overflow-y-auto">{children}</div>
