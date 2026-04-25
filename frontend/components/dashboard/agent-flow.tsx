@@ -1,10 +1,13 @@
 "use client";
 
-import { cn } from "@/lib/utils";
-import { AgentNode } from "./agent-node";
-import { agents } from "@/lib/mock-data";
-import { agentStateFor, connectorStateFor } from "@/lib/swarm-machine";
+import { AnimatePresence } from "motion/react";
+import { swarmTools } from "@/lib/mock-data";
+import { connectorStateFor, toolStateFor } from "@/lib/swarm-machine";
 import type { SwarmPhase } from "@/lib/swarm-machine";
+import { AgentBanner } from "./agent-banner";
+import { ToolNode } from "./tool-node";
+import { FlowConnector } from "./flow-connector";
+import { ReasoningBubble } from "./reasoning-bubble";
 
 type Props = {
   phase: SwarmPhase;
@@ -12,43 +15,66 @@ type Props = {
 };
 
 export function AgentFlow({ phase, ctaForExecute }: Props) {
-  const ingest = agents.find((a) => a.slot === "ingest")!;
-  const optimize = agents.find((a) => a.slot === "optimize")!;
-  const execute = agents.find((a) => a.slot === "execute")!;
+  const wholesalerTools = swarmTools.filter((t) => t.agent === "wholesaler");
+  const merchantTools = swarmTools.filter((t) => t.agent === "merchant");
 
-  return (
-    <div className="flex flex-col">
-      <AgentNode agent={ingest} state={agentStateFor("ingest", phase)} />
-      <Connector state={connectorStateFor("optimize", phase)} />
-      <AgentNode agent={optimize} state={agentStateFor("optimize", phase)} />
-      <Connector state={connectorStateFor("execute", phase)} />
-      <AgentNode agent={execute} state={agentStateFor("execute", phase)} cta={ctaForExecute} />
-    </div>
+  const wholesalerActive = wholesalerTools.some(
+    (t) => toolStateFor(t.phase, phase) === "active"
   );
-}
+  const merchantActive = merchantTools.some(
+    (t) => toolStateFor(t.phase, phase) === "active"
+  );
 
-function Connector({ state }: { state: "idle" | "active" | "done" }) {
-  const stroke =
-    state === "active" ? "var(--tng-yellow)" : state === "done" ? "var(--tng-blue)" : "var(--stroke-soft)";
   return (
-    <svg
-      width="100%"
-      height="36"
-      viewBox="0 0 100 36"
-      preserveAspectRatio="none"
-      aria-hidden="true"
-      className="block"
-    >
-      <line
-        x1="50"
-        y1="0"
-        x2="50"
-        y2="36"
-        stroke={stroke}
-        strokeWidth="2"
-        strokeDasharray={state === "active" ? "6 6" : "0"}
-        className={cn(state === "active" && "animate-dash")}
-      />
-    </svg>
+    <div className="flex flex-col gap-2">
+      <AgentBanner agent="wholesaler" isActive={wholesalerActive} />
+
+      {wholesalerTools.map((tool, i) => (
+        <div key={tool.phase}>
+          {i > 0 && (
+            <FlowConnector
+              state={connectorStateFor(
+                tool.phase as Exclude<SwarmPhase, "idle" | "settled" | "t1">,
+                phase
+              )}
+            />
+          )}
+          <ToolNode tool={tool} state={toolStateFor(tool.phase, phase)} />
+        </div>
+      ))}
+
+      {/* Cross-agent handoff — between t3 and t4 */}
+      <FlowConnector state={connectorStateFor("t4", phase)} variant="handoff" />
+
+      <AgentBanner agent="merchant" isActive={merchantActive} />
+
+      {merchantTools.map((tool, i) => {
+        const state = toolStateFor(tool.phase, phase);
+        return (
+          <div key={tool.phase}>
+            {i > 0 && (
+              <FlowConnector
+                state={connectorStateFor(
+                  tool.phase as Exclude<SwarmPhase, "idle" | "settled" | "t1">,
+                  phase
+                )}
+              />
+            )}
+            <div className="flex items-start">
+              <div className="flex-1">
+                <ToolNode tool={tool} state={state} />
+              </div>
+              <AnimatePresence>
+                {state === "active" && tool.reasoning && (
+                  <ReasoningBubble key={`reasoning-${tool.phase}`} text={tool.reasoning} />
+                )}
+              </AnimatePresence>
+            </div>
+          </div>
+        );
+      })}
+
+      <div className="mt-2">{ctaForExecute}</div>
+    </div>
   );
 }
