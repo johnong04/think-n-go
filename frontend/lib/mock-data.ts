@@ -30,16 +30,21 @@ export type EscrowStatus = "Net-14 Locked" | "Net-30 Escrow" | "Release Pending"
 export type EscrowRow = {
   id: string;
   merchant: string;
+  business: string;
   status: EscrowStatus;
   value: number;
+  termDays: number;
+  daysIn: number;
 };
 
 export const escrowRows: EscrowRow[] = [
-  { id: "e-1", merchant: "Acme Corp Logistics",   status: "Net-14 Locked",   value: 1240500 },
-  { id: "e-2", merchant: "Stark Industries",      status: "Net-30 Escrow",   value: 850200 },
-  { id: "e-3", merchant: "Wayne Enterprises",     status: "Release Pending", value: 4100000 },
-  { id: "e-4", merchant: "Hartono Manufacturing", status: "Net-14 Locked",   value: 312400 },
-  { id: "e-5", merchant: "Sime Components",       status: "Posted",          value: 96800 },
+  { id: "e-1", merchant: "Ahmad bin Yusof",   business: "Restoran Selera Kampung",  status: "Net-14 Locked",   value: 1000,   termDays: 14, daysIn: 8  },
+  { id: "e-2", merchant: "Siti Norhaliza",     business: "Mart Wangsa",              status: "Net-14 Locked",   value: 2400,   termDays: 14, daysIn: 11 },
+  { id: "e-3", merchant: "Tan Mei Ling",       business: "Café Hang Tuah",           status: "Release Pending", value: 1820,   termDays: 14, daysIn: 12 },
+  { id: "e-4", merchant: "Mohd Faisal",        business: "Toko Buah Pasar Borong",   status: "Net-30 Escrow",   value: 3200,   termDays: 30, daysIn: 2  },
+  { id: "e-5", merchant: "Rajesh Kumar",       business: "Kedai Runcit Sentral",     status: "Posted",          value: 540,    termDays: 30, daysIn: 30 },
+  { id: "e-6", merchant: "Nurul Wholesale",    business: "Pasar Tani Distribution",  status: "Net-30 Escrow",   value: 86400,  termDays: 30, daysIn: 14 },
+  { id: "e-7", merchant: "Petron Mart KL",     business: "Petron Convenience Group", status: "Net-14 Locked",   value: 142800, termDays: 14, daysIn: 5  },
 ];
 
 export const arbitrageOffer = {
