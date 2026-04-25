@@ -10,6 +10,7 @@ type Props = {
 
 export function SwarmBadge({ phase }: Props) {
   const isRunning = phase !== "idle" && phase !== "settled";
+  const isPulsing = isRunning;
   const label = phase === "settled" ? "SWARM SETTLED" : "SWARM ACTIVE";
 
   return (
@@ -18,7 +19,7 @@ export function SwarmBadge({ phase }: Props) {
         "inline-flex items-center gap-2 self-start rounded-xl px-3 py-1.5",
         "font-mono text-[11px] font-semibold uppercase tracking-[0.1em] text-ink",
         phase === "settled" ? "bg-up text-paper" : "bg-tng-yellow",
-        phase !== "settled" && "animate-swarm-pulse"
+        isPulsing && "animate-swarm-pulse"
       )}
     >
       <motion.span
