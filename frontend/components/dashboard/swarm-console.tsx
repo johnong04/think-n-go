@@ -10,7 +10,7 @@ import { ToolLog } from "./tool-log";
 import { YieldSlider } from "./yield-slider";
 import { ExecutionReceipt } from "./execution-receipt";
 import { yieldOffer } from "@/lib/mock-data";
-import { PHASE_TIMINGS_MS, TOTAL_RUN_MS } from "@/lib/swarm-machine";
+import { PHASE_DURATION_MS, TOTAL_RUN_MS } from "@/lib/swarm-machine";
 import type { SwarmPhase } from "@/lib/swarm-machine";
 import { useDemoBus } from "@/lib/demo-bus";
 import { cn } from "@/lib/utils";
@@ -34,10 +34,13 @@ export function SwarmConsole({ phase, onPhaseChange }: Props) {
 
   const runSequence = useCallback(() => {
     clearTimers();
-    onPhaseChangeRef.current("ingesting");
-    timeouts.current.push(setTimeout(() => onPhaseChangeRef.current("optimizing"), PHASE_TIMINGS_MS.optimizing));
-    timeouts.current.push(setTimeout(() => onPhaseChangeRef.current("executing"),  PHASE_TIMINGS_MS.executing));
-    timeouts.current.push(setTimeout(() => onPhaseChangeRef.current("settled"),    PHASE_TIMINGS_MS.settled));
+    onPhaseChangeRef.current("t1");
+    let offset = PHASE_DURATION_MS.t1;
+    timeouts.current.push(setTimeout(() => onPhaseChangeRef.current("t2"), offset)); offset += PHASE_DURATION_MS.t2;
+    timeouts.current.push(setTimeout(() => onPhaseChangeRef.current("t3"), offset)); offset += PHASE_DURATION_MS.t3;
+    timeouts.current.push(setTimeout(() => onPhaseChangeRef.current("t4"), offset)); offset += PHASE_DURATION_MS.t4;
+    timeouts.current.push(setTimeout(() => onPhaseChangeRef.current("t5"), offset)); offset += PHASE_DURATION_MS.t5;
+    timeouts.current.push(setTimeout(() => onPhaseChangeRef.current("settled"), offset));
   }, []);
 
   function reset() {
