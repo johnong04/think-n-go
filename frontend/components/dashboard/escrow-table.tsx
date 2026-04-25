@@ -1,26 +1,16 @@
 import { ArrowRight } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { escrowRows, formatRm } from "@/lib/mock-data";
-import type { Mode } from "@/lib/mock-data";
 import { StatusPill } from "./status-pill";
 
-const merchantViewIds = new Set(["e-1", "e-3"]);
+type Props = Record<string, never>;
 
-type Props = {
-  mode?: Mode;
-};
-
-export function EscrowTable({ mode = "wholesaler" }: Props) {
-  const visible = mode === "merchant" ? escrowRows.filter((r) => merchantViewIds.has(r.id)) : escrowRows;
-  const title = mode === "merchant" ? "My Escrows" : "Escrow Pipeline";
-  const col1Header = mode === "merchant" ? "Wholesaler" : "Merchant Entity";
-  const ctaLabel = mode === "merchant" ? "Request Release" : "Generate Liquidity";
-
+export function EscrowTable(_props?: Props) {
   return (
     <section className="border border-stroke-soft bg-card">
       <header className="flex items-center justify-between border-b border-stroke-soft px-6 py-4">
         <h2 className="font-display text-xl font-bold tracking-tight text-ink">
-          {title}
+          Escrow Pipeline
         </h2>
         <button
           type="button"
@@ -34,7 +24,7 @@ export function EscrowTable({ mode = "wholesaler" }: Props) {
         <TableHeader>
           <TableRow className="border-b border-stroke-soft">
             <TableHead className="px-6 font-mono text-[10px] uppercase tracking-[0.08em] text-muted-foreground">
-              {col1Header}
+              Merchant Entity
             </TableHead>
             <TableHead className="font-mono text-[10px] uppercase tracking-[0.08em] text-muted-foreground">
               Status / Term
@@ -46,7 +36,7 @@ export function EscrowTable({ mode = "wholesaler" }: Props) {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {visible.map((row) => (
+          {escrowRows.map((row) => (
             <TableRow
               key={row.id}
               className="group relative border-b border-stroke-soft transition-colors last:border-b-0 hover:bg-paper-grid"
@@ -93,8 +83,7 @@ export function EscrowTable({ mode = "wholesaler" }: Props) {
                     type="button"
                     className="inline-flex items-center gap-1 text-xs font-semibold text-tng-blue hover:text-tng-blue-deep"
                   >
-                    {ctaLabel}
-                    <ArrowRight className="size-3" />
+                    Generate Liquidity →
                   </button>
                 )}
               </TableCell>

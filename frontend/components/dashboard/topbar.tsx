@@ -1,18 +1,13 @@
-"use client";
+type Props = Record<string, never>;
 
-import { ModeSwitch } from "./mode-switch";
-import type { Mode } from "@/lib/mock-data";
-
-type Props = {
-  mode: Mode;
-  onModeChange: (mode: Mode) => void;
-};
-
-export function Topbar({ mode, onModeChange }: Props) {
+export function Topbar(_props?: Props) {
   return (
     <header className="flex h-14 items-center justify-between border-b border-stroke-soft bg-paper px-6">
       <Wordmark />
-      <ModeSwitch mode={mode} onChange={onModeChange} />
+      <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.1em] text-muted-foreground">
+        <span className="size-1.5 rounded-full bg-up" />
+        wholesaler · institutional node
+      </div>
     </header>
   );
 }

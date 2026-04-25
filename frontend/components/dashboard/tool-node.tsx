@@ -1,15 +1,7 @@
 "use client";
 
 import { motion } from "motion/react";
-import {
-  Brain,
-  Calculator,
-  Check,
-  Cpu,
-  Search,
-  Send,
-  ShieldCheck,
-} from "lucide-react";
+import { Brain, Calculator, Check, Cpu, Lock, Receipt, Search, Send, ShieldCheck, TrendingUp, Wallet } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { AIStateLoading } from "@/components/ui/ai-state-loading";
 import type { ToolMeta } from "@/lib/mock-data";
@@ -21,6 +13,10 @@ const ICONS = {
   send: Send,
   brain: Brain,
   "shield-check": ShieldCheck,
+  "trending-up": TrendingUp,
+  wallet: Wallet,
+  lock: Lock,
+  receipt: Receipt,
 } as const;
 
 type Props = {

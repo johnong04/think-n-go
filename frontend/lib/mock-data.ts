@@ -1,4 +1,4 @@
-export type Mode = "merchant" | "wholesaler";
+import type { SwarmScenario } from "./swarm-machine";
 
 export type ChartPoint = { day: number; baseTrend: number; risk: number | null };
 
@@ -33,11 +33,6 @@ export const escrowRows: EscrowRow[] = [
   { id: "e-7", merchant: "Petron Mart KL",     business: "Petron Convenience Group", status: "Net-14 Locked",   value: 142800, termDays: 14, daysIn: 5  },
 ];
 
-export const arbitrageOffer = {
-  merchantCopy: "A wholesaler offered a 2.4% discount to release your escrow 14 days early.",
-  wholesalerCopy: "The agentic swarm has identified a 2.4% yield differential on the Acme Corp escrow if released 14 days early.",
-};
-
 export function formatRm(value: number, opts?: { decimals?: 0 | 2 }) {
   return new Intl.NumberFormat("en-MY", {
     style: "currency",
@@ -48,90 +43,129 @@ export function formatRm(value: number, opts?: { decimals?: 0 | 2 }) {
 }
 
 export type ToolMeta = {
-  /** phase identifier from swarm-machine */
+  /** Tool slot id (t1..t5). Per-scenario tools fill 0..n-1. */
   phase: "t1" | "t2" | "t3" | "t4" | "t5";
-  /** which agent owns this tool */
   agent: "wholesaler" | "merchant";
-  /** snake_case tool function name (mono) */
   name: string;
-  /** one-line action description */
   description: string;
-  /** mono-styled output preview shown when active or done */
   output: string;
-  /** scenario tag chip text */
   scenarioTag: string;
-  /** lucide-react icon name (the consumer imports & maps these) */
-  iconKey: "search" | "calculator" | "send" | "brain" | "shield-check";
-  /** Source/engine label shown in the "engine" pill dangling below the tool node (n8n-style). */
+  iconKey:
+    | "search"
+    | "calculator"
+    | "send"
+    | "brain"
+    | "shield-check"
+    | "trending-up"
+    | "wallet"
+    | "lock"
+    | "receipt";
   engine: string;
-  /** if present, a reasoning bubble pops up while this tool is active */
   reasoning?: string;
 };
 
-export const swarmTools: ToolMeta[] = [
-  {
-    phase: "t1",
-    agent: "wholesaler",
-    name: "scan_escrow_ledger",
-    description: "Query Supabase for LOCKED escrows from healthy MSMEs.",
-    output: "Found 1 match · ESC-7142 · RM 2,450 · NET-14",
-    scenarioTag: "scenario A",
-    iconKey: "search",
-    engine: "supabase.query",
-  },
-  {
-    phase: "t2",
-    agent: "wholesaler",
-    name: "calculate_discount_offer",
-    description: "Compute minimum viable discount % for cash shortfall.",
-    output: "Optimal: 2.0% · RM 49 vs 14d carry",
-    scenarioTag: "scenario A",
-    iconKey: "calculator",
-    engine: "deterministic.solver",
-  },
-  {
-    phase: "t3",
-    agent: "wholesaler",
-    name: "transmit_offer_payload",
-    description: "Route structured JSON offer to Merchant AI.",
-    output: "→ merchant:ahmad-yusof · {pct: 2.0, expires: 2m}",
-    scenarioTag: "scenario A · handoff",
-    iconKey: "send",
-    engine: "edge.router",
-  },
-  {
-    phase: "t4",
-    agent: "merchant",
-    name: "evaluate_arbitrage_logic",
-    description: "Compare offered discount against held GO+ yield.",
-    output: "Net gain RM 46.64 · ACCEPT recommended",
-    scenarioTag: "scenario A",
-    iconKey: "brain",
-    engine: "openai/gpt-4o",
-    reasoning:
-      "Wholesaler offers 2.0% (RM 49.00) for early release. Holding 14 days at 1.8% APY ≈ RM 2.36. Discount nets +RM 46.64 vs status quo. Recommendation: ACCEPT.",
-  },
-  {
-    phase: "t5",
-    agent: "merchant",
-    name: "execute_early_settlement",
-    description: "Trigger Supabase parametric release; double-entry credits.",
-    output: "ledger 0xa9f3…b21c · status: SETTLED",
-    scenarioTag: "scenario A",
-    iconKey: "shield-check",
-    engine: "supabase.tx",
-  },
-];
+export const swarmToolsByScenario: Record<SwarmScenario, ToolMeta[]> = {
+  A: [
+    {
+      phase: "t1",
+      agent: "wholesaler",
+      name: "scan_escrow_ledger",
+      description: "Query Supabase for LOCKED escrows from healthy MSMEs.",
+      output: "Found 1 match · ESC-7142 · Ahmad bin Yusof · RM 1,000 · NET-14",
+      scenarioTag: "scenario A",
+      iconKey: "search",
+      engine: "supabase.query",
+    },
+    {
+      phase: "t2",
+      agent: "wholesaler",
+      name: "calculate_discount_offer",
+      description: "Compute minimum viable discount to entice early release.",
+      output: "Optimal: 2.0% · RM 20 · covers RM 800 shortfall + RM 180 buffer",
+      scenarioTag: "scenario A",
+      iconKey: "calculator",
+      engine: "deterministic.solver",
+    },
+    {
+      phase: "t3",
+      agent: "wholesaler",
+      name: "transmit_offer_payload",
+      description: "Route structured JSON offer to Merchant AI.",
+      output: "→ merchant:ahmad-yusof · {pct: 2.0, amount_rm: 20, expires: 2m}",
+      scenarioTag: "scenario A · handoff",
+      iconKey: "send",
+      engine: "edge.router",
+    },
+    {
+      phase: "t4",
+      agent: "merchant",
+      name: "evaluate_arbitrage_logic",
+      description: "Compare offered discount against held GO+ yield.",
+      output: "Net gain RM 18.50 · ACCEPT recommended",
+      scenarioTag: "scenario A",
+      iconKey: "brain",
+      engine: "openai/gpt-4o",
+      reasoning:
+        "Wholesaler offers 2.0% (RM 20) for early release. Holding 14 days at 4% APY ≈ RM 1.50. Discount nets +RM 18.50 vs status quo. Recommendation: ACCEPT.",
+    },
+    {
+      phase: "t5",
+      agent: "merchant",
+      name: "execute_early_settlement",
+      description: "Trigger Supabase parametric release; double-entry credits.",
+      output: "ledger 0xa9f3…b21c · wholesaler +RM 980 · GO+ wallet +RM 20",
+      scenarioTag: "scenario A",
+      iconKey: "shield-check",
+      engine: "supabase.tx",
+    },
+  ],
+  B: [
+    {
+      phase: "t1",
+      agent: "merchant",
+      name: "predict_demand_and_shortfall",
+      description: "Analyze historical QR sales to forecast stockout.",
+      output: "Stockout in 3 days · order RM 1,000 · cash short RM 500",
+      scenarioTag: "scenario B",
+      iconKey: "trending-up",
+      engine: "openai/gpt-4o",
+    },
+    {
+      phase: "t2",
+      agent: "merchant",
+      name: "underwrite_micro_loan",
+      description: "Score 30d QR velocity to approve fractional BNPL.",
+      output: "30d velocity RM 18,400 · BNPL approved RM 500 · 0% via sweep",
+      scenarioTag: "scenario B",
+      iconKey: "wallet",
+      engine: "deterministic.scorer",
+    },
+    {
+      phase: "t3",
+      agent: "merchant",
+      name: "lock_mixed_fund_escrow",
+      description: "Combine RM 500 cash + RM 500 BNPL into single LOCKED row.",
+      output: "ESC-7142 · LOCKED · NET-14 · merchant:ahmad-yusof",
+      scenarioTag: "scenario B · handoff",
+      iconKey: "lock",
+      engine: "supabase.tx",
+    },
+    {
+      phase: "t4",
+      agent: "wholesaler",
+      name: "verify_escrow_status",
+      description: "Realtime listener confirms RM 1,000 hits the ledger.",
+      output: "Match · RM 1,000 · status: SECURED — READY FOR DISPATCH",
+      scenarioTag: "scenario B",
+      iconKey: "shield-check",
+      engine: "supabase.realtime",
+    },
+  ],
+};
 
 export const agentBanners = {
-  wholesaler: {
-    label: "Wholesaler Agent",
-    role: "The Liquidity Broker",
-  },
-  merchant: {
-    label: "Merchant Agent",
-    role: "The Agentic CFO",
-  },
+  wholesaler: { label: "Wholesaler Agent", role: "The Liquidity Broker" },
+  merchant:   { label: "Merchant Agent",   role: "The Agentic CFO"      },
 } as const;
 
 export type ToolCall = {
@@ -139,18 +173,26 @@ export type ToolCall = {
   timestamp: string;
   name: string;
   detail: string;
-  /** Phase this entry should appear at — uses the new t1..t5 + settled */
-  appearAt: "t1" | "t2" | "t3" | "t4" | "t5" | "settled";
+  /** Phase position (1..5) at which this entry appears. Index into the active scenario's tool list. */
+  appearAtIndex: number;
+  scenario: SwarmScenario;
 };
 
-export const toolCalls: ToolCall[] = [
-  { id: "log-1", timestamp: "15:42:10", name: "scan_escrow_ledger",       detail: "1 match · ESC-7142",                     appearAt: "t1"      },
-  { id: "log-2", timestamp: "15:42:12", name: "calculate_discount_offer", detail: "2.0% optimal vs 14d hold",               appearAt: "t2"      },
-  { id: "log-3", timestamp: "15:42:14", name: "transmit_offer_payload",   detail: "→ merchant:ahmad-yusof",                 appearAt: "t3"      },
-  { id: "log-4", timestamp: "15:42:16", name: "evaluate_arbitrage_logic", detail: "Net +RM 46.64 · accept",                 appearAt: "t4"      },
-  { id: "log-5", timestamp: "15:42:18", name: "execute_early_settlement", detail: "ledger 0xa9f3…b21c · settled",           appearAt: "t5"      },
-  { id: "log-6", timestamp: "15:42:18", name: "credit.double_entry",      detail: "wholesaler +RM 2,401 / merchant +RM 49", appearAt: "settled" },
-];
+export const toolCallsByScenario: Record<SwarmScenario, ToolCall[]> = {
+  A: [
+    { id: "A-1", timestamp: "15:42:10", name: "scan_escrow_ledger",       detail: "1 match · ESC-7142 · RM 1,000",         appearAtIndex: 0, scenario: "A" },
+    { id: "A-2", timestamp: "15:42:12", name: "calculate_discount_offer", detail: "2.0% · RM 20 nets RM 980",              appearAtIndex: 1, scenario: "A" },
+    { id: "A-3", timestamp: "15:42:14", name: "transmit_offer_payload",   detail: "→ merchant:ahmad-yusof",                appearAtIndex: 2, scenario: "A" },
+    { id: "A-4", timestamp: "15:42:18", name: "evaluate_arbitrage_logic", detail: "+RM 18.50 net · ACCEPT",                appearAtIndex: 3, scenario: "A" },
+    { id: "A-5", timestamp: "15:42:20", name: "execute_early_settlement", detail: "wholesaler +RM 980 · merchant +RM 20",  appearAtIndex: 4, scenario: "A" },
+  ],
+  B: [
+    { id: "B-1", timestamp: "15:30:02", name: "predict_demand_and_shortfall", detail: "stockout in 3d · short RM 500",     appearAtIndex: 0, scenario: "B" },
+    { id: "B-2", timestamp: "15:30:04", name: "underwrite_micro_loan",        detail: "BNPL RM 500 · approved",            appearAtIndex: 1, scenario: "B" },
+    { id: "B-3", timestamp: "15:30:08", name: "lock_mixed_fund_escrow",       detail: "LOCKED · ESC-7142 · NET-14",        appearAtIndex: 2, scenario: "B" },
+    { id: "B-4", timestamp: "15:30:09", name: "verify_escrow_status",         detail: "verified · ready for dispatch",     appearAtIndex: 3, scenario: "B" },
+  ],
+};
 
 export const ledgerHash = "0xa9f3b8e21c";
 
@@ -173,40 +215,32 @@ export type KpiV2 = {
 
 const sparkUp   = [40, 45, 42, 48, 52, 49, 55, 58, 56, 62, 64, 68];
 const sparkFlat = [50, 52, 49, 51, 50, 48, 51, 49, 50, 51, 50, 52];
-const sparkDown = [70, 68, 72, 65, 67, 64, 60, 62, 58, 56, 54, 51];
 
-export const kpisMerchant: KpiV2[] = [
-  { caption: "WALLET BALANCE",   value: "RM 720",   delta: "+RM 12 today",  trend: "up",   spark: sparkUp,   livePulse: true },
-  { caption: "OUTSTANDING",      value: "RM 4,820", delta: "5 escrows",     trend: "up",   spark: sparkFlat },
-  { caption: "BNPL DRAWN",       value: "RM 500",   delta: "0% if swept",   trend: "down", spark: sparkDown },
-  { caption: "GO+ YIELD EARNED", value: "RM 38",    delta: "+RM 0.34/day",  trend: "up",   spark: sparkUp },
+export const kpis: KpiV2[] = [
+  { caption: "ESCROW LOCKED",       value: "RM 145,000", delta: "+ live ledger",       trend: "up", spark: sparkUp,   livePulse: true },
+  { caption: "LIQUIDITY AVAILABLE", value: "RM 37,400",  delta: "RM 800 short today",  trend: "down", spark: sparkFlat },
+  { caption: "ACTIVE MSMES",        value: "128",        delta: "+ healthy cohort",    trend: "up", spark: sparkUp },
+  { caption: "GO+ YIELD 30D",       value: "RM 1,860",   delta: "daily accrual",       trend: "up", spark: sparkUp },
 ];
 
-export const kpisWholesaler: KpiV2[] = [
-  { caption: "ESCROW LOCKED",       value: "RM 145,000", delta: "+ live ledger",    trend: "up", spark: sparkUp,   livePulse: true },
-  { caption: "LIQUIDITY AVAILABLE", value: "RM 37,400",  delta: "instant release",  trend: "up", spark: sparkFlat },
-  { caption: "ACTIVE MSMES",        value: "128",        delta: "+ healthy",        trend: "up", spark: sparkUp },
-  { caption: "GO+ YIELD 30D",       value: "RM 1,860",   delta: "daily accrual",    trend: "up", spark: sparkUp },
-];
+/** Banner copy for the new ShortfallAlert. State-driven, not mode-driven. */
+export type ShortfallState = "open" | "in-flight" | "resolved";
 
-export function kpisForMode(mode: Mode): KpiV2[] {
-  return mode === "merchant" ? kpisMerchant : kpisWholesaler;
-}
-
-export type BannerCopy = {
-  title: string;
-  body: string;
-  cta: string;
-};
-
-export const bannerCopy: Record<"merchant" | "wholesaler", Record<"idle" | "settled", BannerCopy>> = {
-  merchant: {
-    idle:    { title: "Repayment on Track",  body: "BNPL line repaying via 5% QR sweep — RM 175 due in 7 days.", cta: "View schedule" },
-    settled: { title: "Settlement Received", body: "RM 980 credited from early-release acceptance.",              cta: "View ledger" },
+export const shortfallCopy: Record<ShortfallState, { title: string; body: string; cta: string | null }> = {
+  open: {
+    title: "Cash Shortfall Detected",
+    body: "RM 800 needed today to cover supplier payables. Generate liquidity from locked escrows.",
+    cta: "Generate Instant Liquidity",
   },
-  wholesaler: {
-    idle:    { title: "Arbitrage Opportunity Detected", body: "2.4% yield differential — release 14 days early.",  cta: "Review & Execute" },
-    settled: { title: "Liquidity Released",  body: "RM 2,401 credited to your account.",                          cta: "View receipt" },
+  "in-flight": {
+    title: "Liquidity Sequence Running",
+    body: "Wholesaler agent is negotiating with healthy merchants — awaiting acceptance.",
+    cta: null,
+  },
+  resolved: {
+    title: "Liquidity Restored",
+    body: "RM 980 received from Ahmad bin Yusof · RM 180 surplus over the RM 800 shortfall.",
+    cta: null,
   },
 };
 

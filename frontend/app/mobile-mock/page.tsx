@@ -3,68 +3,57 @@
 import { useCallback, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { PhoneShell } from "@/components/mobile/phone-shell";
-import { PersonaToggle, type Persona } from "@/components/mobile/persona-toggle";
 import { ScreenMerchantAlert } from "@/components/mobile/screen-merchant-alert";
 import { ScreenMerchantScan } from "@/components/mobile/screen-merchant-scan";
 import { ScreenMerchantContract } from "@/components/mobile/screen-merchant-contract";
 import { ScreenMerchantOffer } from "@/components/mobile/screen-merchant-offer";
-import { ScreenWholesalerClients } from "@/components/mobile/screen-wholesaler-clients";
-import { ScreenWholesalerLiquidate } from "@/components/mobile/screen-wholesaler-liquidate";
-import { ScreenWholesalerAwaiting } from "@/components/mobile/screen-wholesaler-awaiting";
 import { publish, useDemoBus } from "@/lib/demo-bus";
-import { escrowDraft, offerPayload } from "@/lib/mobile-mock-data";
-import type { ClientRow } from "@/lib/mobile-mock-data";
+import { escrowDraft } from "@/lib/mobile-mock-data";
 
-type MerchantScene = "alert" | "scan" | "contract" | "offer";
-type WholesalerScene = "clients" | "liquidate" | "awaiting";
+type Scene = "alert" | "scan" | "contract" | "offer";
 
 export default function MobileMockPage() {
-  const [persona, setPersona] = useState<Persona>("merchant");
-
-  // Merchant flow state
-  const [merchantScene, setMerchantScene] = useState<MerchantScene>("alert");
+  const [scene, setScene] = useState<Scene>("alert");
   const [offerSettled, setOfferSettled] = useState(false);
-  const [incomingDiscountPct, setIncomingDiscountPct] = useState(offerPayload.defaultDiscountPct);
+  const [incomingDiscountPct, setIncomingDiscountPct] = useState(2.0);
 
-  // Wholesaler flow state
-  const [wholesalerScene, setWholesalerScene] = useState<WholesalerScene>("clients");
-  const [selectedClient, setSelectedClient] = useState<ClientRow | null>(null);
-  const [discountPct, setDiscountPct] = useState(offerPayload.defaultDiscountPct);
-  const [wholesalerSettled, setWholesalerSettled] = useState(false);
-
-  // Cross-window: when an offer is sent (from this or another window), surface it on the merchant side
+  // Cross-window: when wholesaler's swarm fires the offer, surface it on M4
   useDemoBus(
     useCallback((event) => {
       if (event.type === "wholesaler:offer-sent") {
         setIncomingDiscountPct(event.payload.discountPct);
         setOfferSettled(false);
-        setPersona("merchant");
-        setMerchantScene("offer");
-      }
-      if (event.type === "merchant:offer-accepted") {
-        setWholesalerSettled(true);
+        setScene("offer");
       }
     }, [])
   );
 
-  // === Merchant click handlers ===
+  // Scenario B step 1 — merchant fires bnpl-funded which triggers the dashboard's swarm
   function fundOrder() {
     publish({
       type: "merchant:bnpl-funded",
       payload: { escrowId: escrowDraft.escrowId, amount: escrowDraft.totalRm, bnpl: escrowDraft.bnplRm },
     });
-    setMerchantScene("scan");
+    setScene("scan");
   }
 
+  // Scenario B step 3 — merchant fires escrow-locked when contract is confirmed
   function lockEscrow() {
     publish({
       type: "merchant:escrow-locked",
-      payload: { escrowId: escrowDraft.escrowId, amount: escrowDraft.totalRm, termDays: escrowDraft.termDays },
+      payload: {
+        escrowId: escrowDraft.escrowId,
+        amount: escrowDraft.totalRm,
+        termDays: escrowDraft.termDays,
+        merchantName: "Ahmad bin Yusof",
+        business: "Restoran Selera Kampung",
+      },
     });
-    setMerchantScene("offer");
-    setOfferSettled(false);
+    // After the lock, mobile sits in a "locked" state on the contract screen — we don't reuse M4 for Scenario B
+    setScene("alert");
   }
 
+  // Scenario A response — merchant accepts the wholesaler's early-release offer
   function acceptOffer() {
     const discountRm = Math.round((escrowDraft.totalRm * incomingDiscountPct) / 100);
     publish({
@@ -76,125 +65,51 @@ export default function MobileMockPage() {
       },
     });
     setOfferSettled(true);
-    // BroadcastChannel does not deliver to the publishing tab — drive the wholesaler-side
-    // settled state directly so the same-window demo still resolves.
-    setWholesalerSettled(true);
   }
 
   function declineOffer() {
     setOfferSettled(false);
-    setMerchantScene("alert");
-  }
-
-  // === Wholesaler click handlers ===
-  function selectClient(client: ClientRow) {
-    setSelectedClient(client);
-    setDiscountPct(offerPayload.defaultDiscountPct);
-    setWholesalerScene("liquidate");
-  }
-
-  function sendOffer() {
-    if (!selectedClient) return;
-    publish({
-      type: "wholesaler:offer-sent",
-      payload: {
-        escrowId: selectedClient.id,
-        discountPct,
-        clientName: selectedClient.name,
-      },
-    });
-    setWholesalerSettled(false);
-    setWholesalerScene("awaiting");
-    // BroadcastChannel does not deliver to the publishing tab — prime the merchant-side
-    // offer scene directly so a single-window demo can show the handshake by toggling personas.
-    setIncomingDiscountPct(discountPct);
-    setOfferSettled(false);
-    setMerchantScene("offer");
-  }
-
-  function resetWholesaler() {
-    setSelectedClient(null);
-    setWholesalerSettled(false);
-    setWholesalerScene("clients");
+    setScene("alert");
   }
 
   return (
     <PhoneShell>
-      <PersonaToggle persona={persona} onChange={setPersona} />
-
       <AnimatePresence mode="wait">
-        {persona === "merchant" ? (
-          <motion.div
-            key={`m-${merchantScene}`}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.28 }}
-            className="flex flex-1 flex-col"
-          >
-            {merchantScene === "alert" && <ScreenMerchantAlert onFundOrder={fundOrder} />}
-            {merchantScene === "scan" && (
-              <ScreenMerchantScan
-                onScanComplete={() => setMerchantScene("contract")}
-                onBack={() => setMerchantScene("alert")}
-              />
-            )}
-            {merchantScene === "contract" && (
-              <ScreenMerchantContract onLock={lockEscrow} onBack={() => setMerchantScene("scan")} />
-            )}
-            {merchantScene === "offer" && (
-              <ScreenMerchantOffer
-                discountPct={incomingDiscountPct}
-                onAccept={acceptOffer}
-                onDecline={declineOffer}
-                settled={offerSettled}
-              />
-            )}
-          </motion.div>
-        ) : (
-          <motion.div
-            key={`w-${wholesalerScene}`}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.28 }}
-            className="flex flex-1 flex-col"
-          >
-            {wholesalerScene === "clients" && <ScreenWholesalerClients onSelect={selectClient} />}
-            {wholesalerScene === "liquidate" && selectedClient && (
-              <ScreenWholesalerLiquidate
-                client={selectedClient}
-                discountPct={discountPct}
-                onDiscountChange={setDiscountPct}
-                onSend={sendOffer}
-                onBack={() => setWholesalerScene("clients")}
-              />
-            )}
-            {wholesalerScene === "awaiting" && selectedClient && (
-              <ScreenWholesalerAwaiting
-                client={selectedClient}
-                discountPct={discountPct}
-                settled={wholesalerSettled}
-                onReset={resetWholesaler}
-              />
-            )}
-            {/* Fallback if a sub-scene is selected without a client (e.g., after persona switch + back) */}
-            {wholesalerScene !== "clients" && !selectedClient && (
-              <div className="grid flex-1 place-items-center text-white/80 text-sm">
-                Select a client to continue.
-              </div>
-            )}
-          </motion.div>
-        )}
+        <motion.div
+          key={scene}
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -8 }}
+          transition={{ duration: 0.28 }}
+          className="flex flex-1 flex-col"
+        >
+          {scene === "alert" && <ScreenMerchantAlert onFundOrder={fundOrder} />}
+          {scene === "scan" && (
+            <ScreenMerchantScan
+              onScanComplete={() => setScene("contract")}
+              onBack={() => setScene("alert")}
+            />
+          )}
+          {scene === "contract" && (
+            <ScreenMerchantContract onLock={lockEscrow} onBack={() => setScene("scan")} />
+          )}
+          {scene === "offer" && (
+            <ScreenMerchantOffer
+              discountPct={incomingDiscountPct}
+              onAccept={acceptOffer}
+              onDecline={declineOffer}
+              settled={offerSettled}
+            />
+          )}
+        </motion.div>
       </AnimatePresence>
 
-      {/* Quick reset for demo: appears as a tiny chip; non-themed so it stays visually subordinate */}
+      {/* Tiny dev reset chip — bottom-right, non-themed */}
       <button
         type="button"
         onClick={() => {
-          setMerchantScene("alert");
+          setScene("alert");
           setOfferSettled(false);
-          resetWholesaler();
         }}
         className="absolute right-3 top-9 rounded-full bg-black/30 px-2 py-0.5 text-[10px] font-mono uppercase tracking-[0.08em] text-white/80 hover:bg-black/50"
       >

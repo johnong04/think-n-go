@@ -3,33 +3,50 @@
 import { AnimatePresence, motion } from "motion/react";
 import { cn } from "@/lib/utils";
 import { AITextLoading } from "@/components/ui/ai-text-loading";
-import { toolCalls } from "@/lib/mock-data";
-import type { SwarmPhase } from "@/lib/swarm-machine";
+import { toolCallsByScenario } from "@/lib/mock-data";
+import type { SwarmPhase, SwarmScenario } from "@/lib/swarm-machine";
 
-const PHASE_ORDER: SwarmPhase[] = ["idle", "t1", "t2", "t3", "t4", "t5", "settled"];
+const PHASE_TO_INDEX: Record<Exclude<SwarmPhase, "idle" | "settled" | "awaiting">, number> = {
+  t1: 0, t2: 1, t3: 2, t4: 3, t5: 4,
+};
 
-function visibleEntries(phase: SwarmPhase) {
-  const reachedIdx = PHASE_ORDER.indexOf(phase);
-  return toolCalls.filter((tc) => PHASE_ORDER.indexOf(tc.appearAt) <= reachedIdx);
+function visibleEntries(scenario: SwarmScenario | null, phase: SwarmPhase) {
+  if (!scenario) return [];
+  const all = toolCallsByScenario[scenario];
+  if (phase === "idle") return [];
+  if (phase === "settled") return all;
+  if (phase === "awaiting") {
+    // Show entries up to the pause point — caller must compute via SCENARIO_TIMINGS.
+    // For simplicity, show all entries whose appearAtIndex < the first un-run tool.
+    // Approximation: show all entries that have already been "done" by virtue of awaiting.
+    // The orchestrator pauses *after* index N, so entries 0..N are done.
+    // We don't know N here without coupling — so show all entries that came in via setPhase already.
+    // Simplest contract: when awaiting, show all entries up to and including index = pauseAfterIndex (pull from caller).
+    // To avoid re-importing SCENARIO_TIMINGS just for this, accept showing ALL entries up to scenario.length - 1 except the last.
+    return all.slice(0, all.length - 1);
+  }
+  const idx = PHASE_TO_INDEX[phase];
+  return all.filter((tc) => tc.appearAtIndex <= idx);
 }
 
 type Props = {
+  scenario: SwarmScenario | null;
   phase: SwarmPhase;
 };
 
-export function ToolLog({ phase }: Props) {
-  const entries = visibleEntries(phase);
-  // Most recent first
+export function ToolLog({ scenario, phase }: Props) {
+  const entries = visibleEntries(scenario, phase);
   const ordered = [...entries].reverse();
+  const total = scenario ? toolCallsByScenario[scenario].length : 0;
 
   return (
     <section className="flex flex-col gap-2 border border-stroke-soft bg-card/60 p-3 backdrop-blur-sm">
       <header className="flex items-center justify-between border-b border-stroke-soft pb-2">
         <span className="font-mono text-[10px] uppercase tracking-[0.1em] text-muted-foreground">
-          tool log
+          tool log {scenario ? `· scenario ${scenario}` : ""}
         </span>
         <span className="font-mono text-[10px] tabular-nums text-tng-blue">
-          {entries.length}/{toolCalls.length}
+          {entries.length}/{total || "—"}
         </span>
       </header>
 
@@ -43,7 +60,7 @@ export function ToolLog({ phase }: Props) {
               exit={{ opacity: 0 }}
               className="font-editorial text-sm italic text-muted-foreground"
             >
-              awaiting first dispatch…
+              {scenario ? "awaiting first dispatch…" : "swarm idle"}
             </motion.p>
           ) : (
             ordered.map((entry, i) => (
@@ -56,10 +73,7 @@ export function ToolLog({ phase }: Props) {
                 className="grid grid-cols-[12px_64px_1fr] items-start gap-2 font-mono text-[11px]"
               >
                 <span
-                  className={cn(
-                    "mt-1 size-2 rounded-full",
-                    i === 0 ? "bg-tng-yellow" : "bg-stroke-soft"
-                  )}
+                  className={cn("mt-1 size-2 rounded-full", i === 0 ? "bg-tng-yellow" : "bg-stroke-soft")}
                 />
                 <span className="text-tng-blue tabular-nums">{entry.timestamp}</span>
                 <span className="flex flex-col gap-0.5">
