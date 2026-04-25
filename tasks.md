@@ -57,6 +57,12 @@ Hackathon execution plan derived from [specs.md](specs.md). Frontend-first, demo
   - shadcn Slider restyled with yellow track + ink thumb; live delta readout shows RM offer total against base RM 2,450.
 - [x] **3.4** Execution receipt card
   - ExecutionReceipt slides in on settled phase: ledger hash 0xa9f3b8e21c, discount %, net-to-wholesaler in display font, green success ring.
+- [ ] **3.5** Predictive Liquidation Targeting — Wholesaler AI tool (specs §6.2)
+  - Replace static rule-based targeting with the `evaluate_network_liquidity()` tool. The Wholesaler agent uses real-time signals to choose *which* merchant to target, not a hardcoded list.
+  - **Anonymized QR Velocity:** queries the TNG backend for live DuitNow QR transaction velocity across all merchants holding locked escrows. Raw merchant data never reaches the wholesaler.
+  - **Selection Logic:** strictly targets merchants with high transaction volume (proxy for strong cash flow + ability to accept early settlement). Skips low-velocity merchants even if their escrow is large.
+  - **Adversarial Negotiation:** if the Wholesaler AI proposes a mathematically inferior discount to a highly liquid merchant, the receiving Merchant AI rejects the payload AND returns a sharp, math-based roast that surfaces on the Wholesaler's dashboard UI ("offer is RM X below the 14-day GO+ yield, declined"). This is a visible feedback loop, not silent rejection.
+  - Slots into the existing AgentFlow as a tool node on the Wholesaler agent (between `scan_escrow_ledger` and `calculate_discount_offer`). Roast surfaces in the swarm console as a new "rejection" log entry + a banner on the canvas.
 
 ## Phase 4 — Mobile push experience
 
@@ -66,6 +72,11 @@ Hackathon execution plan derived from [specs.md](specs.md). Frontend-first, demo
   - Accept/Decline buttons on merchant offer screen and Send Offer / awaiting transitions on wholesaler side. All click handlers publish to `useDemoBus()` so the dashboard can subscribe in Phase 5/6.
 - [x] **4.3** Wire to the dashboard via WebSocket (Supabase Realtime in Phase 6) OR a temporary BroadcastChannel for same-browser demo
   - BroadcastChannel `think-n-go-bus` wired via `lib/demo-bus.ts`. Single hook `useDemoBus(handler)` for subscribers, `publish(event)` for emitters. Same-origin only — both phone and dashboard share `localhost:3000`. Swap target for Supabase Realtime is internal to the hook.
+- [ ] **4.4** Treasury Impact Dashboard — persistent component on Ahmad's mobile (specs §6.1)
+  - A persistent "Treasury Impact" surface visible on the merchant mobile route (likely as a tab on M1 Home or a dedicated screen reachable from the wallet card). Dynamic data viz, not a static badge.
+  - **Cumulative Yield Retained:** total GO+ interest earned across all of Ahmad's Net-14 escrows (running sum, formatted as `RM X.XX` with subtle daily tick animation). Sources from the same mock dataset that feeds the dashboard's GO+ yield KPI in Phase 2.
+  - **BNPL Revenue Multiplier:** calculated metric showing estimated extra revenue Ahmad generated from inventory bought *exclusively* via the AI-underwritten BNPL facility. Display as a multiplier (e.g., `1.42×`) plus the implied RM uplift. Mock formula: `(BNPL-funded inventory turnover × avg margin) ÷ baseline cash-only revenue`.
+  - Visual style follows the existing TNG cards (white floating on tng-blue-app body, Bricolage display numbers, tabular-nums). Numbers tick when new escrow events fire on the demo bus.
 
 ## Phase 5 — AI orchestration (Vercel AI SDK v6)
 
