@@ -1,12 +1,13 @@
 from fastapi import Depends, FastAPI
 
 from app.dependencies import get_query_token
-from app.routers import admin, items, users
+from app.routers import admin, aws, items, users
 
 app = FastAPI(title="Think N Go API")
 
 app.include_router(users.router)
 app.include_router(items.router)
+app.include_router(aws.router)
 app.include_router(
     admin.router,
     prefix="/admin",
