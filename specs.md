@@ -31,25 +31,29 @@ We are deploying an Agentic Parametric Web2 Escrow to act as an autonomous finan
 - **The "Instant Liquidity" Trigger:** When the wholesaler needs cash to pay their own suppliers, they click one button. Their AI autonomously sends targeted offers strictly to healthy MSMEs: _"Take a 2% discount to release your escrow payment today instead of waiting 14 days."_ \* **Automated Settlement:** If the MSME's AI calculates the arbitrage is favorable, the escrow is instantly released, liquidating the wholesaler's receivables on demand.
 
 ## 4. UI/UX Specifications (Split-Window Demo Architecture)
-The live demo will utilize a split-browser window setup: 20% of the screen running the Mobile Route (`/mobile-mock`), and 80% running the Desktop Dashboard Route (`/dashboard`). 
+
+The live demo will utilize a split-browser window setup: 20% of the screen running the Mobile Route (`/mobile-mock`), and 80% running the Desktop Dashboard Route (`/dashboard`).
 
 ### 4.1 The Mobile Route (`/mobile-mock`)
-* A standalone web page simulating a smartphone screen using a fixed aspect ratio and Tailwind CSS device bezels. 
-* It actively listens for WebSockets or state changes from the backend. When the Wholesaler AI executes an action, this route renders the incoming push notification and "Accept" button for Ahmad.
+
+- A standalone web page simulating a smartphone screen using a fixed aspect ratio and Tailwind CSS device bezels.
+- It actively listens for WebSockets or state changes from the backend. When the Wholesaler AI executes an action, this route renders the incoming push notification and "Accept" button for Ahmad.
 
 ### 4.2 The Desktop Dashboard Route (`/dashboard`)
+
 This is the primary enterprise Web2 view, split strictly into two internal zones. Do not embed any mobile UI here.
 
-* **Zone 1: The Business Stage (Left - 60% Width):**
-    * *Liquidity Health Chart:* A sleek area chart projecting 30-day cash flow versus upcoming accounts payable.
-    * *Escrow Pipeline Table:* A `shadcn/ui` data table displaying active clients. Key columns: Merchant Entity, Trade Terms (Net-14), Escrow Status (Locked/Pending), and a quick-action "Generate Liquidity" button.
-* **Zone 2: The Swarm Command Console (Right - 40% Width):**
-    * Dedicated exclusively to visualizing the AI's reasoning via Generative UI.
-    * Must render rich, interactive React components (Kokonut UI/21st.dev) stacked vertically, such as JSON parsing blocks, dynamic yield arbitrage sliders, and execution receipts.
+- **Zone 1: The Business Stage (Left - 60% Width):**
+  - _Liquidity Health Chart:_ A sleek area chart projecting 30-day cash flow versus upcoming accounts payable.
+  - _Escrow Pipeline Table:_ A `shadcn/ui` data table displaying active clients. Key columns: Merchant Entity, Trade Terms (Net-14), Escrow Status (Locked/Pending), and a quick-action "Generate Liquidity" button.
+- **Zone 2: The Swarm Command Console (Right - 40% Width):**
+  - Dedicated exclusively to visualizing the AI's reasoning via Generative UI.
+  - Must render rich, interactive React components (Kokonut UI/21st.dev) stacked vertically, such as JSON parsing blocks, dynamic yield arbitrage sliders, and execution receipts.
 
 ### 4.3 Design Constraints
-* **Aesthetic:** "Management Consulting" clean combined with Vercel/Linear modernism. High data-ink ratio, stark contrasts. 
-* **Colors:** Crisp White/Silver backgrounds, TNG Corporate Blue for structure and primary actions, TNG Yellow strictly for highlighting AI agent actions and pulsing visual indicators.
+
+- **Aesthetic:** "Management Consulting" clean combined with Vercel/Linear modernism. High data-ink ratio, stark contrasts.
+- **Colors:** Crisp White/Silver backgrounds, TNG Corporate Blue for structure and primary actions, TNG Yellow strictly for highlighting AI agent actions and pulsing visual indicators.
 
 ## 5. Technical Stack (Optimized for Rapid AI-Assisted Development)
 
@@ -58,5 +62,67 @@ This is the primary enterprise Web2 view, split strictly into two internal zones
 - **Database (Strict ACID Ledger):** Supabase (PostgreSQL). Essential for atomic double-entry accounting (Escrow locks/releases) and Realtime WebSockets for instant UI updates.
 - **Component Libraries:**
   - **shadcn/ui:** For core, accessible, unstyled baseline components.
-  - **Kokonut UI & 21st.dev:** For modern, animated, copy-paste AI generative components (e.g., animated prompt boxes, dynamic status nodes) to elevate the demo quality.
+  - **Kokonut UI (https://kokonutui.com/docs) & 21st.dev (https://21st.dev/community/components):** For modern, animated, copy-paste AI generative components (e.g., animated prompt boxes, dynamic status nodes) to elevate the demo quality.
 - **Data Strategy:** Use intelligent mocking for external APIs (like logistics tracking), but use a live Supabase instance to prove the backend ledger updates are real.
+
+## 6. Standard Operating Procedures & User Flows
+
+### 6.1 The Baseline Flow (Standard Net-14 Escrow)
+This is the default chronological sequence when neither the Wholesaler nor the Merchant requires AI intervention.
+1. **The Invoice:** The Wholesaler presents a Dynamic DuitNow QR code to the Merchant (encoding the RM 1,000 amount and Net-14 terms).
+2. **The Scan:** Merchant (Ahmad) scans the QR code via the TNG eWallet app.
+3. **The Lock:** RM 1,000 is deducted from Ahmad's liquid balance and securely locked in the TNG GO+ Escrow ledger. 
+4. **The Yield:** Over the next 14 days, the locked RM 1,000 generates daily GO+ money market yield for the TNG ecosystem.
+5. **The Settlement:** On exactly Day 14, the escrow automatically unlocks, routing the principal RM 1,000 to the Wholesaler's account.
+
+### 6.2 Scenario A: Wholesaler Initiates Liquidation (Early Release)
+This flow occurs when the Wholesaler faces a cash shortfall and requires immediate liquidity before the 14-day term expires.
+1. **The Trigger:** The Wholesaler logs into the Desktop Dashboard, sees a "Liquidity Shortfall" warning, and clicks "Generate Instant Liquidity."
+2. **The AI Calculation:** The Wholesaler's AI Agent identifies Ahmad's locked Net-14 escrow (RM 1,000). It calculates that a 2% discount is the optimal mathematically viable offer.
+3. **The Handshake:** The AI Agent transmits this offer to Ahmad's Merchant AI.
+4. **The Merchant Notification:** Ahmad receives a push notification on his mobile app: *"Supplier offers 2% (RM 20) discount for early escrow release."*
+5. **The Parametric Execution:** Ahmad clicks **"Accept"**. The escrow is instantly dissolved. RM 980 is credited to the Wholesaler, and the RM 20 discount is credited back to Ahmad's wallet.
+
+### 6.3 Scenario B: Merchant Initiates BNPL (Predictive Restock)
+This flow occurs when the Merchant's AI detects a supply shortage but the Merchant lacks the upfront cash to secure the Net-14 escrow.
+1. **The Trigger:** Ahmad's mobile app displays an AI Alert: *"High demand projected. Recommend RM 1,000 bulk order. Cash shortfall: RM 500."*
+2. **The Funding Request:** Ahmad clicks **"Fund & Order"** on the notification. 
+3. **The AI Underwriting:** The Merchant AI Agent instantly verifies Ahmad's past QR transaction velocity to approve a RM 500 fractional BNPL micro-loan.
+4. **The Mixed-Fund Lock:** The Escrow is created using RM 500 of Ahmad's existing cash + RM 500 from the newly approved BNPL line. The Wholesaler sees a fully secured RM 1,000 locked escrow on their dashboard and dispatches the goods.
+5. **The Automated Repayment:** As Ahmad sells the goods to end-consumers via his DuitNow QR code, the AI automatically sweeps 5% of every incoming customer payment directly toward settling the RM 500 BNPL balance.
+
+## 7. Pinned Dependency Versions (verified 2026-04-25)
+
+These versions are the floor — collaborators install with `npm install` / `pip install -r requirements.txt` and must not silently downgrade. Bump deliberately, not casually, before demo day.
+
+### 7.1 Frontend (`/frontend/package.json`)
+
+| Package                 | Pinned Range              | Notes                                                                                |
+| ----------------------- | ------------------------- | ------------------------------------------------------------------------------------ |
+| `next`                  | `^16.0.0` (latest 16.2.2) | App Router; Turbopack is default — no `--turbopack` flag needed in 16.               |
+| `react` / `react-dom`   | `^19.0.0`                 | RSC + streaming generative UI.                                                       |
+| `ai` (Vercel AI SDK)    | `^6.0.168`                | npm `latest`. Use `tool()` + `streamText` + `useChat`.                               |
+| `zod`                   | `^3.23.8`                 | Required for AI SDK `tool({ inputSchema })` definitions.                             |
+| `@supabase/supabase-js` | `^2.x` (latest 2.104.1)   | Postgres client + Realtime WebSockets. Add when wiring DB.                           |
+| `shadcn` (CLI)          | `^2.104.1`                | Run `npx shadcn@latest add <component>`. Components are vendored, not a runtime dep. |
+| `tailwindcss`           | `^4.0.0` (latest 4.2.4)   | Tailwind v4 — config-less, CSS-first.                                                |
+| `lucide-react`          | `^0.468.0`                | Icon set.                                                                            |
+| `typescript`            | `^5.7.2`                  |                                                                                      |
+
+**Generative UI sources (copy-paste, unversioned):** Kokonut UI, 21st.dev. Pull components into `/frontend/app/components/` as needed.
+
+### 7.2 Backend (`/backend/requirements.txt`)
+
+| Package             | Pinned      | Notes                                                       |
+| ------------------- | ----------- | ----------------------------------------------------------- |
+| `fastapi`           | `==0.115.8` | API layer between Next.js and Supabase / external services. |
+| `uvicorn[standard]` | `==0.34.0`  | ASGI server.                                                |
+| `boto3`             | `==1.35.99` | AWS SDK (e.g., Bedrock or S3 hooks).                        |
+| `python-dotenv`     | `==1.0.1`   | Local env loading.                                          |
+
+### 7.3 Decisions on Record
+
+- **AI SDK v6 over v5:** v6 is the current npm `latest` stable. A fresh hackathon codebase has no migration debt, so we start on v6. Do not introduce v5 patterns from older blog posts.
+- **Supabase over Prisma + raw Postgres:** Realtime WebSockets ship the `/mobile-mock` push notification flow with zero extra infra. ACID atomic transactions for escrow lock/release are first-class.
+- **Tailwind v4 over v3:** v4's CSS-first config is faster to iterate on under demo pressure. No `tailwind.config.js` to maintain.
+- **No blockchain.** Web2 only. PostgreSQL row updates inside a transaction _are_ the escrow.
