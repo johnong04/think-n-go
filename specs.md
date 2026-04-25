@@ -55,6 +55,19 @@ This is the primary enterprise Web2 view, split strictly into two internal zones
 - **Aesthetic:** "Management Consulting" clean combined with Vercel/Linear modernism. High data-ink ratio, stark contrasts.
 - **Colors:** Crisp White/Silver backgrounds, TNG Corporate Blue for structure and primary actions, TNG Yellow strictly for highlighting AI agent actions and pulsing visual indicators.
 
+## 6. Specific Feature Logic (Agentic & Analytics)
+
+### 6.1 Merchant UI: Treasury Impact Dashboard
+Ahmad's mobile interface must include a persistent "Treasury Impact" component. This is a dynamic data visualization that tracks:
+* **Cumulative Yield Retained:** The total GO+ interest earned across all Net-14 escrows.
+* **BNPL Revenue Multiplier:** A calculated metric showing estimated extra revenue generated from inventory purchased exclusively via the AI-underwritten BNPL facility.
+
+### 6.2 Agentic Tool: Predictive Liquidation Targeting (Wholesaler AI)
+The Wholesaler AI will not use static, rule-based targeting. It will execute the `evaluate_network_liquidity()` tool, which relies on real-time data:
+* **Anonymized QR Velocity:** The AI queries the TNG backend for the real-time DuitNow QR transaction velocity of all merchants holding locked escrows.
+* **Selection Logic:** It strictly targets merchants experiencing high transaction volume (indicating strong cash flow and the ability to accept an early settlement). 
+* **Adversarial Negotiation:** If the Wholesaler AI proposes a mathematically inferior discount to a highly liquid merchant, the receiving Merchant AI is programmed to reject the payload and return a sharp, math-based roast to the Wholesaler's UI.
+
 ## 5. Technical Stack (Optimized for Rapid AI-Assisted Development)
 
 - **Framework:** Next.js 16 (App Router, Turbopack)
