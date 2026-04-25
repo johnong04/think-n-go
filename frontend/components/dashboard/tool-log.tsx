@@ -34,7 +34,7 @@ export function ToolLog({ phase }: Props) {
       </header>
 
       <div className="flex min-h-[160px] flex-col gap-1.5">
-        <AnimatePresence initial={false}>
+        <AnimatePresence>
           {ordered.length === 0 ? (
             <motion.p
               key="empty"

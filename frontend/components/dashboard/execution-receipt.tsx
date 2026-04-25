@@ -15,11 +15,12 @@ export function ExecutionReceipt({ yieldPercent }: Props) {
     <motion.section
       initial={{ opacity: 0, y: 12, scale: 0.96 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: 8, scale: 0.96 }}
       transition={{ duration: 0.5, ease: [0.2, 0.8, 0.2, 1] }}
-      className="relative flex flex-col gap-3 border-2 border-up bg-card p-4 shadow-[0_0_0_4px_color-mix(in_oklab,var(--up)_15%,transparent)]"
+      className="relative flex flex-col gap-3 border-2 border-tng-blue bg-card p-4 shadow-[0_0_0_4px_color-mix(in_oklab,var(--tng-blue)_18%,transparent)]"
     >
-      <header className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.1em] text-up">
-        <CheckCircle2 className="size-4" />
+      <header className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.1em] text-tng-blue-deep">
+        <CheckCircle2 className="size-4 text-up" />
         settled
       </header>
 
