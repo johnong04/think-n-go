@@ -1,34 +1,55 @@
-export type SwarmPhase = "idle" | "ingesting" | "optimizing" | "executing" | "settled";
+export type SwarmPhase = "idle" | "t1" | "t2" | "t3" | "t4" | "t5" | "settled";
 
-export type AgentSlot = "ingest" | "optimize" | "execute";
+export const PHASE_ORDER: SwarmPhase[] = ["idle", "t1", "t2", "t3", "t4", "t5", "settled"];
 
-export type AgentState = "idle" | "active" | "done";
+export const PHASE_DURATION_MS: Record<Exclude<SwarmPhase, "idle" | "settled">, number> = {
+  t1: 1000,
+  t2: 1000,
+  t3: 1200, // includes cross-agent handoff
+  t4: 1400, // reasoning is shown here, slightly longer
+  t5: 1000,
+};
 
-export type ConnectorState = "idle" | "active" | "done";
+export const TOTAL_RUN_MS = Object.values(PHASE_DURATION_MS).reduce((a, b) => a + b, 0);
 
-export const PHASE_TIMINGS_MS = {
-  ingesting: 0,
-  optimizing: 1500,
-  executing: 3000,
-  settled: 4500,
-} as const;
+/** Cumulative offsets to use with setTimeout */
+export function phaseOffsetMs(target: SwarmPhase): number {
+  if (target === "idle") return 0;
+  if (target === "settled") return TOTAL_RUN_MS;
+  let acc = 0;
+  for (const p of ["t1", "t2", "t3", "t4", "t5"] as const) {
+    if (p === target) return acc;
+    acc += PHASE_DURATION_MS[p];
+  }
+  return acc;
+}
 
-export const TOTAL_RUN_MS = 5000;
+export type ToolState = "idle" | "active" | "done";
 
-export function agentStateFor(slot: AgentSlot, phase: SwarmPhase): AgentState {
-  const order: SwarmPhase[] = ["idle", "ingesting", "optimizing", "executing", "settled"];
-  const phaseIdx = order.indexOf(phase);
-  const slotIdx: Record<AgentSlot, number> = { ingest: 1, optimize: 2, execute: 3 };
-  const me = slotIdx[slot];
-  if (phaseIdx < me) return "idle";
-  if (phaseIdx === me) return "active";
+export function toolStateFor(
+  toolPhase: Exclude<SwarmPhase, "idle" | "settled">,
+  currentPhase: SwarmPhase
+): ToolState {
+  const ci = PHASE_ORDER.indexOf(currentPhase);
+  const ti = PHASE_ORDER.indexOf(toolPhase);
+  if (ci < ti) return "idle";
+  if (ci === ti) return "active";
   return "done";
 }
 
-export function connectorStateFor(below: AgentSlot, phase: SwarmPhase): ConnectorState {
-  const above = below === "optimize" ? "ingest" : "optimize";
-  const aboveState = agentStateFor(above, phase);
-  if (aboveState === "active") return "active";
-  if (aboveState === "done") return "done";
+export type ConnectorState = "idle" | "active" | "done";
+
+export function connectorStateFor(
+  belowToolPhase: Exclude<SwarmPhase, "idle" | "settled" | "t1">,
+  currentPhase: SwarmPhase
+): ConnectorState {
+  const order: SwarmPhase[] = ["t1", "t2", "t3", "t4", "t5"];
+  const idx = order.indexOf(belowToolPhase);
+  if (idx <= 0) return "idle";
+  const prev = order[idx - 1];
+  const prevState = toolStateFor(prev as Exclude<SwarmPhase, "idle" | "settled">, currentPhase);
+  const meState = toolStateFor(belowToolPhase, currentPhase);
+  if (meState === "active") return "active";
+  if (prevState === "done" && meState === "done") return "done";
   return "idle";
 }
