@@ -56,7 +56,6 @@ class ContractOut(BaseModel):
     date_created: Optional[datetime]
     created_at: datetime
     updated_at: datetime
-    agreed_at: Optional[datetime]
     approved_at: Optional[datetime]
     funded_at: Optional[datetime]
     solved_at: Optional[datetime]
@@ -88,9 +87,11 @@ class LedgerOut(BaseModel):
 
 
 class ContractPropose(BaseModel):
-    supplier_id: uuid.UUID = Field(..., description="UUID of the proposing supplier")
+    supplier_id: uuid.UUID = Field(...,
+                                   description="UUID of the proposing supplier")
     invoice_num: Optional[str] = Field(None, max_length=50)
-    merchant_id: Optional[uuid.UUID] = Field(None, description="Optional merchant UUID")
+    merchant_id: Optional[uuid.UUID] = Field(
+        None, description="Optional merchant UUID")
     business_name: Optional[str] = Field(None, max_length=255)
     supplier_name: Optional[str] = Field(None, max_length=255)
     supplier_ph: Optional[str] = Field(None, max_length=20)
@@ -103,7 +104,8 @@ class ContractPropose(BaseModel):
     price_per_unit: Optional[Decimal] = Field(None, ge=0)
     total_price: Optional[Decimal] = Field(None, ge=0)
     signature_url: Optional[str] = Field(None, max_length=2000)
-    principal_amount: Decimal = Field(..., gt=0, description="Invoice value in MYR")
+    principal_amount: Decimal = Field(...,
+                                      gt=0, description="Invoice value in MYR")
     total_amount: Optional[Decimal] = Field(None, ge=0)
     yield_rate: Decimal = Field(
         default=Decimal("0.0350"),
@@ -112,7 +114,8 @@ class ContractPropose(BaseModel):
         description="Annual yield rate (e.g. 0.0350 = 3.5% p.a.)",
     )
     invoice_ref: Optional[str] = Field(None, max_length=128)
-    net_days: Optional[str] = Field(None, max_length=16, examples=["Net-14", "Net-30"])
+    net_days: Optional[str] = Field(
+        None, max_length=16, examples=["Net-14", "Net-30"])
     description: Optional[str] = Field(None, max_length=512)
 
 
@@ -136,7 +139,8 @@ class BulkProductUpdateItem(BaseModel):
     @model_validator(mode="after")
     def validate_identifier(self) -> "BulkProductUpdateItem":
         if self.contract_id is None and not self.invoice_num:
-            raise ValueError("Each item must include contract_id or invoice_num")
+            raise ValueError(
+                "Each item must include contract_id or invoice_num")
         return self
 
 
@@ -176,7 +180,8 @@ class BulkMetadataUpdateItem(BaseModel):
     @model_validator(mode="after")
     def validate_identifier(self) -> "BulkMetadataUpdateItem":
         if self.contract_id is None and not self.invoice_num:
-            raise ValueError("Each item must include contract_id or invoice_num")
+            raise ValueError(
+                "Each item must include contract_id or invoice_num")
         return self
 
 
@@ -192,7 +197,8 @@ class BulkMetadataUpdateResult(BaseModel):
 
 class MerchantAgreeRequest(BaseModel):
     contract_id: uuid.UUID
-    merchant_id: uuid.UUID = Field(..., description="UUID of the agreeing merchant")
+    merchant_id: uuid.UUID = Field(...,
+                                   description="UUID of the agreeing merchant")
 
 
 # ---------------------------------------------------------------------------
