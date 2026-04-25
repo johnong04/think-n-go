@@ -7,15 +7,17 @@ import type { ConnectorState } from "@/lib/swarm-machine";
 
 type Props = {
   state: ConnectorState;
-  /** "handoff" connector renders a wider dashed yellow S-curve with a label badge */
+  /** "handoff" connector renders a wider variant with a label badge */
   variant?: "default" | "handoff";
 };
 
 export function FlowConnector({ state, variant = "default" }: Props) {
   const isHandoff = variant === "handoff";
   const height = isHandoff ? 64 : 44;
-  // Clean straight vertical line — no curve.
-  const path = `M 50,4 L 50,${height - 4}`;
+  const width = isHandoff ? 32 : 24;
+  const cx = width / 2;
+  // Clean straight vertical line — pixel-perfect viewBox, no stretch.
+  const path = `M ${cx},4 L ${cx},${height - 4}`;
 
   const stroke =
     state === "active"
@@ -35,13 +37,12 @@ export function FlowConnector({ state, variant = "default" }: Props) {
       exit={{ opacity: 0, scaleY: 0.6 }}
       transition={{ duration: 0.32, ease: [0.2, 0.8, 0.2, 1] }}
       style={{ transformOrigin: "top center" }}
-      className="relative"
+      className="relative flex justify-center"
     >
       <svg
-        width="100%"
+        width={width}
         height={height}
-        viewBox={`0 0 100 ${height}`}
-        preserveAspectRatio="none"
+        viewBox={`0 0 ${width} ${height}`}
         className="block overflow-visible"
         aria-hidden="true"
       >
@@ -52,25 +53,24 @@ export function FlowConnector({ state, variant = "default" }: Props) {
             viewBox="0 0 10 10"
             refX="8"
             refY="5"
-            markerWidth="6"
-            markerHeight="6"
-            markerUnits="userSpaceOnUse"
+            markerWidth="4"
+            markerHeight="4"
             orient="auto-start-reverse"
           >
-            <path d="M 0,2 L 8,5 L 0,8 z" fill={stroke} />
+            <path d="M 0,1 L 10,5 L 0,9 z" fill={stroke} />
           </marker>
         </defs>
         <use
           href={`#${pathId}`}
           fill="none"
           stroke={stroke}
-          strokeWidth={isHandoff ? 2.5 : 2}
-          strokeDasharray="5 5"
+          strokeWidth={isHandoff ? 1.75 : 1.5}
+          strokeDasharray="4 4"
           markerEnd={`url(#${arrowId})`}
           className="animate-dash"
         />
         {state === "active" && (
-          <circle r="3.5" fill="var(--tng-yellow)">
+          <circle r="2.5" fill="var(--tng-yellow)">
             <animateMotion dur="1.2s" repeatCount="indefinite">
               <mpath href={`#${pathId}`} />
             </animateMotion>
