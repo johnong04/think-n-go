@@ -76,6 +76,9 @@ export default function MobileMockPage() {
       },
     });
     setOfferSettled(true);
+    // BroadcastChannel does not deliver to the publishing tab — drive the wholesaler-side
+    // settled state directly so the same-window demo still resolves.
+    setWholesalerSettled(true);
   }
 
   function declineOffer() {
@@ -102,6 +105,11 @@ export default function MobileMockPage() {
     });
     setWholesalerSettled(false);
     setWholesalerScene("awaiting");
+    // BroadcastChannel does not deliver to the publishing tab — prime the merchant-side
+    // offer scene directly so a single-window demo can show the handshake by toggling personas.
+    setIncomingDiscountPct(discountPct);
+    setOfferSettled(false);
+    setMerchantScene("offer");
   }
 
   function resetWholesaler() {

@@ -59,7 +59,7 @@ export function ScreenWholesalerClients({ onSelect }: Props) {
                       client.health === "AAA"
                         ? "ml-auto text-up"
                         : client.health === "AA"
-                          ? "ml-auto text-tng-blue"
+                          ? "ml-auto text-tng-blue-app"
                           : "ml-auto text-tng-red"
                     }
                   >
