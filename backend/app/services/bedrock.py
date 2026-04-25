@@ -11,6 +11,7 @@ class BedrockError(RuntimeError):
 def converse_text(
     settings: Settings,
     message: str,
+    model_id: str | None = None,
     system_prompt: str | None = None,
     max_tokens: int = 512,
     temperature: float = 0.2,
@@ -20,7 +21,7 @@ def converse_text(
         client = session.client("bedrock-runtime")
 
         request = {
-            "modelId": settings.bedrock_model_id,
+            "modelId": model_id or settings.bedrock_model_id,
             "messages": [
                 {
                     "role": "user",

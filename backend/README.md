@@ -38,6 +38,34 @@ You can also use the compatibility entrypoint:
 python main.py
 ```
 
+## Create Database Schema
+
+Run the ORM migration helper to create/verify tables in PostgreSQL:
+
+```bash
+python -m app.db.migrations
+```
+
+Or via Makefile:
+
+```bash
+make db-create
+```
+
+If you prefer raw SQL, apply the schema file directly:
+
+```bash
+psql -h <host> -U <user> -d <database> -f app/db/refined_schema.sql
+```
+
+The refined Agentic Liquidity Engine schema is implemented in:
+
+- `suppliers`
+- `merchants`
+- `contracts`
+- `escrow_vault`
+- `mock_investments`
+
 ## AWS Credentials
 
 Do not paste AWS access keys, secret keys, or session tokens into the codebase. The backend uses boto3's standard credential chain, so local development should use AWS IAM Identity Center SSO.

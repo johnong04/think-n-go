@@ -1,0 +1,55 @@
+{
+  "as_of_date": "2026-04-25",
+  "data_assumption": "Transaction history only has datetime and signed amount_rm. Positive means money IN, negative means money OUT. Current balance is provided separately.",
+  "result": {
+    "demand_pressure_score": 72.3,
+    "demand_pressure_label": "High",
+    "confidence_score": 87.3
+  },
+  "calculation_trace": {
+    "forecast_ratio_vs_baseline": 1.237,
+    "recent_momentum_multiplier": 1.0382,
+    "projected_3_day_inflow_rm": 1564.57,
+    "normal_3_day_baseline_rm": 1264.3,
+    "typical_large_outflow_rm": 1891.05,
+    "typical_cycle_days": 8.0,
+    "last_large_outflow_date": "2026-04-18",
+    "days_since_last_large_outflow": 7,
+    "current_balance_rm": 760.0,
+    "balance_coverage_ratio": 0.4019,
+    "estimated_cash_gap_rm": 1131.05,
+    "suggested_bnpl_topup_rm": 1150.0,
+    "expected_5pct_daily_repayment_rm": 26.08,
+    "estimated_repayment_days": 45
+  },
+  "reason_codes": [
+    {
+      "code": "INFLOW_ABOVE_BASELINE",
+      "severity": "medium",
+      "message": "Projected 3-day money-in is RM1,564.57, which is 23.8% above the normal 3-day baseline of RM1,264.30."
+    },
+    {
+      "code": "LARGE_OUTFLOW_CYCLE_DUE",
+      "severity": "high",
+      "message": "A large OUT pattern appears close to due: the typical cycle is 8 days, and it has been 7 days since the last large OUT on 2026-04-18."
+    },
+    {
+      "code": "LOW_BALANCE_VS_OUTFLOW",
+      "severity": "high",
+      "message": "Current balance is RM760.00, covering only 40.2% of the typical large OUT amount of RM1,891.05."
+    },
+    {
+      "code": "BNPL_TOPUP_RECOMMENDED",
+      "severity": "action",
+      "message": "Estimated cash gap is RM1,131.05, so the suggested BNPL top-up is rounded to RM1,150.00."
+    },
+    {
+      "code": "REPAYMENT_ESTIMATE",
+      "severity": "info",
+      "message": "At a 5% repayment rate from projected money-in, expected repayment is RM26.08 per day over about 45 days."
+    }
+  ],
+  "caveats": [
+    "Large OUT transactions are inferred as restock-like from amount/timing only. The engine does not know the true transaction purpose."
+  ]
+}
