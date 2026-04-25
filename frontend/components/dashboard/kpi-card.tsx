@@ -1,24 +1,22 @@
 "use client";
 
 import { motion } from "motion/react";
-import { ArrowUpRight } from "lucide-react";
+import { ArrowUpRight, ArrowDownRight } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { Kpi } from "@/lib/mock-data";
+import { Sparkline } from "./sparkline";
+import type { KpiV2 } from "@/lib/mock-data";
 
-type Props = Kpi & { index: number };
+type Props = KpiV2 & { index: number };
 
-export function KpiCard({ caption, value, trend, livePulse, index }: Props) {
+export function KpiCard({ caption, value, delta, trend, spark, livePulse, index }: Props) {
+  const TrendIcon = trend === "up" ? ArrowUpRight : ArrowDownRight;
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{
-        delay: 0.16 + index * 0.08,
-        duration: 0.5,
-        ease: [0.2, 0.8, 0.2, 1],
-      }}
+      transition={{ delay: 0.16 + index * 0.08, duration: 0.5, ease: [0.2, 0.8, 0.2, 1] }}
       className={cn(
-        "group relative flex flex-col justify-between border border-stroke-soft bg-card p-6 transition-colors",
+        "group relative flex flex-col justify-between gap-3 border border-stroke-soft bg-card p-5 transition-colors",
         "hover:border-stroke"
       )}
     >
@@ -26,17 +24,18 @@ export function KpiCard({ caption, value, trend, livePulse, index }: Props) {
         <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
           {caption}
         </span>
-        {livePulse && (
-          <span className="size-1.5 animate-swarm-pulse rounded-full bg-tng-yellow" />
-        )}
+        {livePulse && <span className="size-1.5 animate-swarm-pulse rounded-full bg-tng-yellow" />}
       </div>
-      <div className="mt-6 font-display text-[40px] font-bold leading-none tracking-[-0.02em] text-ink">
-        {value}
+      <div>
+        <div className="font-display text-[36px] font-bold leading-none tracking-[-0.02em] text-ink">
+          {value}
+        </div>
+        <div className="mt-2 flex items-center gap-1 text-[11px] text-muted-foreground">
+          <TrendIcon className={cn("size-3", trend === "up" ? "text-up" : "text-down")} />
+          {delta}
+        </div>
       </div>
-      <div className="mt-2 flex items-center gap-1 text-xs text-muted-foreground">
-        <ArrowUpRight className="size-3" />
-        {trend}
-      </div>
+      <Sparkline data={spark} trend={trend} className="-mb-1 -mx-1 opacity-70" />
     </motion.div>
   );
 }

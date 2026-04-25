@@ -101,3 +101,60 @@ export const yieldOffer = {
   step: 0.1,
   baseAmount: 2450,
 };
+
+export type KpiV2 = {
+  caption: string;
+  value: string;
+  delta: string;
+  trend: "up" | "down";
+  spark: number[];
+  livePulse?: boolean;
+};
+
+const sparkUp   = [40, 45, 42, 48, 52, 49, 55, 58, 56, 62, 64, 68];
+const sparkFlat = [50, 52, 49, 51, 50, 48, 51, 49, 50, 51, 50, 52];
+const sparkDown = [70, 68, 72, 65, 67, 64, 60, 62, 58, 56, 54, 51];
+
+export const kpisMerchant: KpiV2[] = [
+  { caption: "WALLET BALANCE",   value: "RM 720",   delta: "+RM 12 today",  trend: "up",   spark: sparkUp,   livePulse: true },
+  { caption: "OUTSTANDING",      value: "RM 4,820", delta: "5 escrows",     trend: "up",   spark: sparkFlat },
+  { caption: "BNPL DRAWN",       value: "RM 500",   delta: "0% if swept",   trend: "up",   spark: sparkDown },
+  { caption: "GO+ YIELD EARNED", value: "RM 38",    delta: "+RM 0.34/day",  trend: "up",   spark: sparkUp },
+];
+
+export const kpisWholesaler: KpiV2[] = [
+  { caption: "ESCROW LOCKED",       value: "RM 145,000", delta: "+ live ledger",    trend: "up", spark: sparkUp,   livePulse: true },
+  { caption: "LIQUIDITY AVAILABLE", value: "RM 37,400",  delta: "instant release",  trend: "up", spark: sparkFlat },
+  { caption: "ACTIVE MSMES",        value: "128",        delta: "+ healthy",        trend: "up", spark: sparkUp },
+  { caption: "GO+ YIELD 30D",       value: "RM 1,860",   delta: "daily accrual",    trend: "up", spark: sparkUp },
+];
+
+export function kpisForMode(mode: Mode): KpiV2[] {
+  return mode === "merchant" ? kpisMerchant : kpisWholesaler;
+}
+
+export type BannerCopy = {
+  title: string;
+  body: string;
+  cta: string;
+};
+
+export const bannerCopy: Record<"merchant" | "wholesaler", Record<"idle" | "settled", BannerCopy>> = {
+  merchant: {
+    idle:    { title: "Repayment on Track",  body: "BNPL line repaying via 5% QR sweep — RM 175 due in 7 days.", cta: "View schedule" },
+    settled: { title: "Settlement Received", body: "RM 980 credited from early-release acceptance.",              cta: "View ledger" },
+  },
+  wholesaler: {
+    idle:    { title: "Arbitrage Opportunity Detected", body: "2.4% yield differential — release 14 days early.",  cta: "Review & Execute" },
+    settled: { title: "Liquidity Released",  body: "RM 2,401 credited to your account.",                          cta: "View receipt" },
+  },
+};
+
+export const merchantCashFlow: ChartPoint[] = Array.from({ length: 30 }, (_, i) => {
+  const day = i + 1;
+  const sales = 600 + Math.sin(i / 5) * 80 + i * 6;
+  const dip = i === 14 ? 1 : 0;
+  const baseTrend = Math.round(sales - dip * 100);
+  const risk = dip ? baseTrend - 60 : null;
+  return { day, baseTrend, risk };
+});

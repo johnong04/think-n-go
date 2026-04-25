@@ -6,15 +6,15 @@ import { EscrowTable } from "@/components/dashboard/escrow-table";
 export default function DashboardPage() {
   return (
     <DashboardShell
-      staticContent={
+      staticContent={(mode) => (
         <div className="flex flex-col gap-px bg-stroke-soft">
-          <KpiStrip />
+          <KpiStrip mode={mode} />
           <div className="flex flex-col gap-px bg-stroke-soft">
-            <LiquidityChart />
-            <EscrowTable />
+            <LiquidityChart mode={mode} />
+            <EscrowTable mode={mode} />
           </div>
         </div>
-      }
+      )}
     />
   );
 }
