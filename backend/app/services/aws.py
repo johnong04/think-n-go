@@ -8,8 +8,11 @@ class AwsCredentialsError(RuntimeError):
     pass
 
 
-def create_aws_session(settings: Settings) -> boto3.Session:
-    session_kwargs = {"region_name": settings.aws_region}
+def create_aws_session(
+    settings: Settings,
+    region_name: str | None = None,
+) -> boto3.Session:
+    session_kwargs = {"region_name": region_name or settings.aws_region}
 
     if settings.aws_profile:
         session_kwargs["profile_name"] = settings.aws_profile

@@ -55,20 +55,22 @@ SSO start URL: https://identitycenter.amazonaws.com/ssoins-82108fefdf1fb1e4
 SSO region: ap-southeast-1
 Account: 560288546574
 Role: finhack_IsbUsersPS
-Profile name: 560288546574_finhack_IsbUsersPS
+Profile name: finhack_IsbUsersPS-560288546574
 ```
 
 Before running the backend, log in with SSO:
 
 ```bash
-aws sso login --profile 560288546574_finhack_IsbUsersPS
+aws sso login --profile finhack_IsbUsersPS-560288546574
 ```
 
 Then set non-secret backend settings in `.env`:
 
 ```env
 AWS_REGION="ap-southeast-1"
-AWS_PROFILE="560288546574_finhack_IsbUsersPS"
+AWS_PROFILE="finhack_IsbUsersPS-560288546574"
+AWS_BEDROCK_REGION="ap-southeast-5"
+BEDROCK_MODEL_ID="apac.amazon.nova-micro-v1:0"
 ```
 
 Verify the backend can see your active AWS identity:
@@ -76,6 +78,16 @@ Verify the backend can see your active AWS identity:
 ```bash
 curl http://127.0.0.1:8000/aws/identity
 ```
+
+Call a Bedrock model without a Bedrock API key:
+
+```bash
+curl -X POST http://127.0.0.1:8000/bedrock/chat \
+  -H "Content-Type: application/json" \
+  -d '{"message":"Write one short sentence about Malaysia."}'
+```
+
+This uses the AWS SDK with your SSO profile or deployment IAM role. The default model is `apac.amazon.nova-micro-v1:0`, the APAC inference profile for Amazon Nova Micro, a low-cost text model suitable for simple prompts.
 
 For deployed environments, prefer an attached IAM role, task role, or workload identity instead of local SSO profiles.
 
@@ -94,16 +106,19 @@ backend/
 |   |   |-- __init__.py
 |   |   |-- admin.py
 |   |   |-- aws.py
+|   |   |-- bedrock.py
 |   |   |-- items.py
 |   |   `-- users.py
 |   |-- schemas/
 |   |   |-- __init__.py
 |   |   |-- aws.py
+|   |   |-- bedrock.py
 |   |   |-- common.py
 |   |   |-- items.py
 |   |   `-- users.py
 |   `-- services/
 |       |-- __init__.py
+|       |-- bedrock.py
 |       `-- aws.py
 |-- Dockerfile
 |-- main.py
