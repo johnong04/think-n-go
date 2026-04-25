@@ -47,35 +47,102 @@ export function formatRm(value: number, opts?: { decimals?: 0 | 2 }) {
   }).format(value).replace("MYR", "RM");
 }
 
+export type ToolMeta = {
+  /** phase identifier from swarm-machine */
+  phase: "t1" | "t2" | "t3" | "t4" | "t5";
+  /** which agent owns this tool */
+  agent: "wholesaler" | "merchant";
+  /** snake_case tool function name (mono) */
+  name: string;
+  /** one-line action description */
+  description: string;
+  /** mono-styled output preview shown when active or done */
+  output: string;
+  /** scenario tag chip text */
+  scenarioTag: string;
+  /** lucide-react icon name (the consumer imports & maps these) */
+  iconKey: "search" | "calculator" | "send" | "brain" | "shield-check";
+  /** if present, a reasoning bubble pops up while this tool is active */
+  reasoning?: string;
+};
+
+export const swarmTools: ToolMeta[] = [
+  {
+    phase: "t1",
+    agent: "wholesaler",
+    name: "scan_escrow_ledger",
+    description: "Query Supabase for LOCKED escrows from healthy MSMEs.",
+    output: "Found 1 match · ESC-7142 · RM 2,450 · NET-14",
+    scenarioTag: "scenario A",
+    iconKey: "search",
+  },
+  {
+    phase: "t2",
+    agent: "wholesaler",
+    name: "calculate_discount_offer",
+    description: "Compute minimum viable discount % for cash shortfall.",
+    output: "Optimal: 2.0% · RM 49 vs 14d carry",
+    scenarioTag: "scenario A",
+    iconKey: "calculator",
+  },
+  {
+    phase: "t3",
+    agent: "wholesaler",
+    name: "transmit_offer_payload",
+    description: "Route structured JSON offer to Merchant AI.",
+    output: "→ merchant:ahmad-yusof · {pct: 2.0, expires: 2m}",
+    scenarioTag: "scenario A · handoff",
+    iconKey: "send",
+  },
+  {
+    phase: "t4",
+    agent: "merchant",
+    name: "evaluate_arbitrage_logic",
+    description: "Compare offered discount against held GO+ yield.",
+    output: "Net gain RM 46.64 · ACCEPT recommended",
+    scenarioTag: "scenario A",
+    iconKey: "brain",
+    reasoning:
+      "Wholesaler offers 2.0% (RM 49.00) for early release. Holding 14 days at 1.8% APY ≈ RM 2.36. Discount nets +RM 46.64 vs status quo. Recommendation: ACCEPT.",
+  },
+  {
+    phase: "t5",
+    agent: "merchant",
+    name: "execute_early_settlement",
+    description: "Trigger Supabase parametric release; double-entry credits.",
+    output: "ledger 0xa9f3…b21c · status: SETTLED",
+    scenarioTag: "scenario A",
+    iconKey: "shield-check",
+  },
+];
+
+export const agentBanners = {
+  wholesaler: {
+    label: "Wholesaler Agent",
+    role: "The Liquidity Broker",
+  },
+  merchant: {
+    label: "Merchant Agent",
+    role: "The Agentic CFO",
+  },
+} as const;
+
 export type ToolCall = {
   id: string;
   timestamp: string;
   name: string;
   detail: string;
-  /** Phase this entry should appear at */
-  appearAt: "ingesting" | "optimizing" | "executing" | "settled";
+  /** Phase this entry should appear at — uses the new t1..t5 + settled */
+  appearAt: "t1" | "t2" | "t3" | "t4" | "t5" | "settled";
 };
 
 export const toolCalls: ToolCall[] = [
-  { id: "t-1", timestamp: "15:42:10", name: "escrow.lock",      detail: "RM 2,450 committed to TNG GO+ escrow",   appearAt: "ingesting"  },
-  { id: "t-2", timestamp: "15:42:14", name: "bnpl.drawdown",    detail: "RM 500 fractional shortfall funded",      appearAt: "optimizing" },
-  { id: "t-3", timestamp: "15:42:21", name: "go_plus.yield",    detail: "+RM 0.34 streaming · 1.8% APY",           appearAt: "optimizing" },
-  { id: "t-4", timestamp: "15:43:02", name: "discount.offer",   detail: "2.0% early-release tendered to wholesaler", appearAt: "executing"  },
-  { id: "t-5", timestamp: "15:43:08", name: "escrow.release",   detail: "Settlement posted · ledger 0xa9f3…b21c",   appearAt: "settled"    },
-];
-
-export type AgentMeta = {
-  slot: "ingest" | "optimize" | "execute";
-  title: string;
-  subtitle: string;
-  /** displayed in the active state */
-  metric: string;
-};
-
-export const agents: AgentMeta[] = [
-  { slot: "ingest",   title: "Data Ingest",     subtitle: "ACME_CORP_API",          metric: "stream live"     },
-  { slot: "optimize", title: "Yield Optimizer", subtitle: "DELTA: +0.6%",           metric: "1.8% → 2.4%"     },
-  { slot: "execute",  title: "Execution",       subtitle: "READY TO COMMIT",        metric: "RM 2,401 net"    },
+  { id: "log-1", timestamp: "15:42:10", name: "scan_escrow_ledger",       detail: "1 match · ESC-7142",                     appearAt: "t1"      },
+  { id: "log-2", timestamp: "15:42:12", name: "calculate_discount_offer", detail: "2.0% optimal vs 14d hold",               appearAt: "t2"      },
+  { id: "log-3", timestamp: "15:42:14", name: "transmit_offer_payload",   detail: "→ merchant:ahmad-yusof",                 appearAt: "t3"      },
+  { id: "log-4", timestamp: "15:42:16", name: "evaluate_arbitrage_logic", detail: "Net +RM 46.64 · accept",                 appearAt: "t4"      },
+  { id: "log-5", timestamp: "15:42:18", name: "execute_early_settlement", detail: "ledger 0xa9f3…b21c · settled",           appearAt: "t5"      },
+  { id: "log-6", timestamp: "15:42:18", name: "credit.double_entry",      detail: "wholesaler +RM 2,401 / merchant +RM 49", appearAt: "settled" },
 ];
 
 export const ledgerHash = "0xa9f3b8e21c";
