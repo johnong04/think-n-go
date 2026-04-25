@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Topbar } from "./topbar";
 import { SwarmConsole } from "./swarm-console";
 import { ArbitrageBanner } from "./arbitrage-banner";
+import { DashboardFooter } from "./dashboard-footer";
 import type { Mode } from "@/lib/mock-data";
 import type { SwarmPhase } from "@/lib/swarm-machine";
 
@@ -25,6 +26,7 @@ export function DashboardShell({ staticContent }: Props) {
         </main>
         <SwarmConsole phase={phase} onPhaseChange={setPhase} />
       </div>
+      <DashboardFooter />
     </div>
   );
 }

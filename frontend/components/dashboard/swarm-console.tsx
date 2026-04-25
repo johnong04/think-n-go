@@ -29,14 +29,16 @@ export function SwarmConsole({ phase, onPhaseChange }: Props) {
     timeouts.current = [];
   }
 
+  const onPhaseChangeRef = useRef(onPhaseChange);
+  onPhaseChangeRef.current = onPhaseChange;
+
   const runSequence = useCallback(() => {
     clearTimers();
-    onPhaseChange("ingesting");
-    timeouts.current.push(setTimeout(() => onPhaseChange("optimizing"), PHASE_TIMINGS_MS.optimizing));
-    timeouts.current.push(setTimeout(() => onPhaseChange("executing"),  PHASE_TIMINGS_MS.executing));
-    timeouts.current.push(setTimeout(() => onPhaseChange("settled"),    PHASE_TIMINGS_MS.settled));
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [onPhaseChange]);
+    onPhaseChangeRef.current("ingesting");
+    timeouts.current.push(setTimeout(() => onPhaseChangeRef.current("optimizing"), PHASE_TIMINGS_MS.optimizing));
+    timeouts.current.push(setTimeout(() => onPhaseChangeRef.current("executing"),  PHASE_TIMINGS_MS.executing));
+    timeouts.current.push(setTimeout(() => onPhaseChangeRef.current("settled"),    PHASE_TIMINGS_MS.settled));
+  }, []);
 
   function reset() {
     clearTimers();
