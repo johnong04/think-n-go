@@ -1,8 +1,14 @@
 import { TrendingUp } from "lucide-react";
 import { arbitrageOffer } from "@/lib/mock-data";
 import type { Mode } from "@/lib/mock-data";
+import type { SwarmPhase } from "@/lib/swarm-machine";
 
-export function ArbitrageBanner({ mode }: { mode: Mode }) {
+type Props = {
+  mode: Mode;
+  phase: SwarmPhase;
+};
+
+export function ArbitrageBanner({ mode, phase: _phase }: Props) {
   const copy = mode === "merchant" ? arbitrageOffer.merchantCopy : arbitrageOffer.wholesalerCopy;
 
   return (
