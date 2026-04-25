@@ -43,8 +43,17 @@ class MsmeInsightRequest(BaseModel):
     llm_summary: MsmeDemandPressureResponse
 
 
+class MsmeInsightNumber(BaseModel):
+    label: str
+    value: str
+
+
 class MsmeInsightResponse(BaseModel):
     headline: str
-    message: str
+    summary: str
+    main_numbers: list[MsmeInsightNumber]
+    plain_reasons: list[str]
+    repayment_text: str | None = None
+    caveat: str
     tone: str
     source_summary: MsmeDemandPressureResponse

@@ -7,6 +7,7 @@ from app.services.msme_insight import (
     build_msme_insight_headline,
     build_msme_insight_system_prompt,
     build_msme_insight_user_prompt,
+    parse_msme_insight,
 )
 
 router = APIRouter(prefix="/msme", tags=["msme"])
@@ -17,22 +18,27 @@ async def create_demand_pressure_insight(
     request: MsmeInsightRequest,
     settings: Settings = Depends(get_settings),
 ):
+    summary_payload = request.llm_summary.model_dump(mode="json")
     try:
-        insight = converse_text(
+        raw_insight = converse_text(
             settings=settings,
             system_prompt=build_msme_insight_system_prompt(),
-            message=build_msme_insight_user_prompt(
-                request.llm_summary.model_dump(mode="json")
-            ),
-            max_tokens=220,
+            message=build_msme_insight_user_prompt(summary_payload),
+            max_tokens=420,
             temperature=0.2,
         )
     except BedrockError as exc:
         raise HTTPException(status_code=503, detail=str(exc)) from exc
 
+    insight = parse_msme_insight(raw_insight, summary_payload)
+
     return MsmeInsightResponse(
-        headline=build_msme_insight_headline(request.llm_summary.model_dump(mode="json")),
-        message=insight.strip(),
+        headline=insight["headline"] or build_msme_insight_headline(summary_payload),
+        summary=insight["summary"],
+        main_numbers=insight["main_numbers"],
+        plain_reasons=insight["plain_reasons"],
+        repayment_text=insight["repayment_text"],
+        caveat=insight["caveat"],
         tone="supportive",
         source_summary=request.llm_summary,
     )

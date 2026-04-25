@@ -34,7 +34,11 @@ export type MsmeDemandPressureSummary = {
 
 export type MsmeInsightResponse = {
   headline: string;
-  message: string;
+  summary: string;
+  main_numbers: Array<{ label: string; value: string }>;
+  plain_reasons: string[];
+  repayment_text: string | null;
+  caveat: string;
   tone: string;
   source_summary: MsmeDemandPressureSummary;
 };

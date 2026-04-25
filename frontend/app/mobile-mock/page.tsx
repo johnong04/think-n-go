@@ -14,6 +14,7 @@ import {
   getDemandPressureInsight,
   getMockDemandPressure,
   type InvoiceDraft,
+  type MsmeInsightResponse,
   type MsmeDemandPressureSummary,
 } from "@/lib/api";
 
@@ -67,7 +68,7 @@ export default function MobileMockPage() {
   const [incomingDiscountPct, setIncomingDiscountPct] = useState(2.0);
   const [summary, setSummary] = useState<MsmeDemandPressureSummary | null>(null);
   const [activeInvoice, setActiveInvoice] = useState<InvoiceDraft | null>(null);
-  const [insightMessage, setInsightMessage] = useState<string | null>(null);
+  const [insight, setInsight] = useState<MsmeInsightResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -86,11 +87,11 @@ export default function MobileMockPage() {
         try {
           const insight = await getDemandPressureInsight(nextSummary);
           if (!cancelled) {
-            setInsightMessage(insight.message);
+            setInsight(insight);
           }
         } catch (insightError) {
           if (!cancelled) {
-            setInsightMessage(null);
+            setInsight(null);
           }
           console.warn("MSME insight generation failed", insightError);
         }
@@ -102,7 +103,7 @@ export default function MobileMockPage() {
               : "Unable to load the demand pressure summary right now.";
           setError(message);
           setSummary(null);
-          setInsightMessage(null);
+          setInsight(null);
         }
       } finally {
         if (!cancelled) {
@@ -203,7 +204,7 @@ export default function MobileMockPage() {
             <ScreenMerchantAlert
               onFundOrder={fundOrder}
               summary={summary}
-              insightMessage={insightMessage}
+              insight={insight}
               loading={loading}
               error={error}
             />
