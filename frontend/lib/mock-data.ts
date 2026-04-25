@@ -1,0 +1,57 @@
+export type Mode = "merchant" | "wholesaler";
+
+export type Kpi = {
+  caption: string;
+  value: string;
+  trend: string;
+  livePulse?: boolean;
+};
+
+export const kpis: Kpi[] = [
+  { caption: "ESCROW LOCKED", value: "RM 145,000", trend: "+ live ledger", livePulse: true },
+  { caption: "LIQUIDITY AVAILABLE", value: "RM 37,400", trend: "instant release" },
+  { caption: "ACTIVE MSMES", value: "128", trend: "+ healthy cohort" },
+  { caption: "GO+ YIELD 30D", value: "RM 1,860", trend: "daily accrual" },
+];
+
+export type ChartPoint = { day: number; baseTrend: number; risk: number | null };
+
+export const liquidityProjection: ChartPoint[] = Array.from({ length: 30 }, (_, i) => {
+  const day = i + 1;
+  const wave = 80000 + Math.sin(i / 4) * 14000 + Math.cos(i / 7) * 7000;
+  const drop = i >= 14 && i <= 19 ? 1 : 0;
+  const baseTrend = Math.round(wave - drop * 18000);
+  const risk = drop ? baseTrend - 4000 : null;
+  return { day, baseTrend, risk };
+});
+
+export type EscrowStatus = "Net-14 Locked" | "Net-30 Escrow" | "Release Pending" | "Posted";
+
+export type EscrowRow = {
+  id: string;
+  merchant: string;
+  status: EscrowStatus;
+  value: number;
+};
+
+export const escrowRows: EscrowRow[] = [
+  { id: "e-1", merchant: "Acme Corp Logistics",   status: "Net-14 Locked",   value: 1240500 },
+  { id: "e-2", merchant: "Stark Industries",      status: "Net-30 Escrow",   value: 850200 },
+  { id: "e-3", merchant: "Wayne Enterprises",     status: "Release Pending", value: 4100000 },
+  { id: "e-4", merchant: "Hartono Manufacturing", status: "Net-14 Locked",   value: 312400 },
+  { id: "e-5", merchant: "Sime Components",       status: "Posted",          value: 96800 },
+];
+
+export const arbitrageOffer = {
+  merchantCopy: "A wholesaler offered a 2.4% discount to release your escrow 14 days early.",
+  wholesalerCopy: "The agentic swarm has identified a 2.4% yield differential on the Acme Corp escrow if released 14 days early.",
+};
+
+export function formatRm(value: number, opts?: { decimals?: 0 | 2 }) {
+  return new Intl.NumberFormat("en-MY", {
+    style: "currency",
+    currency: "MYR",
+    minimumFractionDigits: opts?.decimals ?? 0,
+    maximumFractionDigits: opts?.decimals ?? 0,
+  }).format(value).replace("MYR", "RM");
+}
