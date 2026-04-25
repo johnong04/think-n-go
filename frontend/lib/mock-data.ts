@@ -1,19 +1,5 @@
 export type Mode = "merchant" | "wholesaler";
 
-export type Kpi = {
-  caption: string;
-  value: string;
-  trend: string;
-  livePulse?: boolean;
-};
-
-export const kpis: Kpi[] = [
-  { caption: "ESCROW LOCKED", value: "RM 145,000", trend: "+ live ledger", livePulse: true },
-  { caption: "LIQUIDITY AVAILABLE", value: "RM 37,400", trend: "instant release" },
-  { caption: "ACTIVE MSMES", value: "128", trend: "+ healthy cohort" },
-  { caption: "GO+ YIELD 30D", value: "RM 1,860", trend: "daily accrual" },
-];
-
 export type ChartPoint = { day: number; baseTrend: number; risk: number | null };
 
 export const liquidityProjection: ChartPoint[] = Array.from({ length: 30 }, (_, i) => {
@@ -118,7 +104,7 @@ const sparkDown = [70, 68, 72, 65, 67, 64, 60, 62, 58, 56, 54, 51];
 export const kpisMerchant: KpiV2[] = [
   { caption: "WALLET BALANCE",   value: "RM 720",   delta: "+RM 12 today",  trend: "up",   spark: sparkUp,   livePulse: true },
   { caption: "OUTSTANDING",      value: "RM 4,820", delta: "5 escrows",     trend: "up",   spark: sparkFlat },
-  { caption: "BNPL DRAWN",       value: "RM 500",   delta: "0% if swept",   trend: "up",   spark: sparkDown },
+  { caption: "BNPL DRAWN",       value: "RM 500",   delta: "0% if swept",   trend: "down", spark: sparkDown },
   { caption: "GO+ YIELD EARNED", value: "RM 38",    delta: "+RM 0.34/day",  trend: "up",   spark: sparkUp },
 ];
 
