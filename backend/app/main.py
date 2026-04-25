@@ -5,7 +5,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.utils import get_openapi
 
-from app.routers import aws, bedrock, alibaba, invoice, msme, msme_insight
+from app.routers import aws, bedrock, alibaba, invoice, msme, msme_insight, agent
 from app.routers import contracts as contracts_router
 from app.db.migrations import create_all_tables
 from app.scheduler import start_scheduler, stop_scheduler
@@ -52,6 +52,7 @@ app.include_router(msme.router)
 app.include_router(msme_insight.router)
 app.include_router(alibaba.router, tags=["Alibaba Cloud"])
 app.include_router(contracts_router.router, tags=["Contracts"])
+app.include_router(agent.router, tags=["Agent"])
 
 
 def custom_openapi():
