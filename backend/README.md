@@ -98,24 +98,17 @@ backend/
 |-- app/
 |   |-- __init__.py
 |   |-- main.py
-|   |-- dependencies.py
 |   |-- core/
 |   |   |-- __init__.py
 |   |   `-- config.py
 |   |-- routers/
 |   |   |-- __init__.py
-|   |   |-- admin.py
 |   |   |-- aws.py
 |   |   |-- bedrock.py
-|   |   |-- items.py
-|   |   `-- users.py
 |   |-- schemas/
 |   |   |-- __init__.py
 |   |   |-- aws.py
-|   |   |-- bedrock.py
-|   |   |-- common.py
-|   |   |-- items.py
-|   |   `-- users.py
+|   |   `-- bedrock.py
 |   `-- services/
 |       |-- __init__.py
 |       |-- bedrock.py
