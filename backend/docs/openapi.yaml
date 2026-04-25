@@ -1,0 +1,1404 @@
+openapi: 3.1.0
+info:
+  title: Think N Go API
+  description: "\n## \U0001F680 Contract & Escrow Service\nAgentic Liquidity Pipeline\
+    \ for B2B supply chain financing.\n\n### \U0001F4CB Contract Lifecycle\n1. **Propose**\
+    \ - Supplier initiates contract\n2. **Agree** - Merchant accepts terms\n3. **Fund**\
+    \ - Merchant funds escrow with GO+ vault\n4. **Accrue** - System accrues daily\
+    \ yield (daily or manual)\n5. **Settle** - Merchant confirms delivery, releases\
+    \ payout\n\n### \U0001F510 Security\n- All operations require authentication\n\
+    - State transitions are immutable\n- Cryptographic audit trail maintained\n\n\
+    ### \U0001F4CA API Tiers\n- **Contracts**: Core escrow & settlement\n- **AWS**:\
+    \ Cloud services integration\n- **Bedrock**: AI-powered insights\n- **Alibaba**:\
+    \ Cloud storage & logistics\n"
+  version: 1.0.0
+  x-logo:
+    url: https://fastapi.tiangolo.com/img/logo-margin/logo-teal.png
+paths:
+  /aws/identity:
+    get:
+      tags:
+      - AWS Services
+      - aws
+      summary: Read Aws Identity
+      operationId: read_aws_identity_aws_identity_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AwsIdentity'
+  /bedrock/chat:
+    post:
+      tags:
+      - Bedrock AI
+      - bedrock
+      summary: Chat With Bedrock
+      operationId: chat_with_bedrock_bedrock_chat_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BedrockChatRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BedrockChatResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /alibaba/oss/upload:
+    post:
+      tags:
+      - Alibaba Cloud
+      - alibaba
+      summary: Upload File
+      description: Upload file to Alibaba Cloud OSS
+      operationId: upload_file_alibaba_oss_upload_post
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Body_upload_file_alibaba_oss_upload_post'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FileUploadResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /alibaba/oss/list:
+    get:
+      tags:
+      - Alibaba Cloud
+      - alibaba
+      summary: List Files
+      description: List files in OSS bucket
+      operationId: list_files_alibaba_oss_list_get
+      parameters:
+      - name: prefix
+        in: query
+        required: false
+        schema:
+          type: string
+          default: ''
+          title: Prefix
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /alibaba/oss/delete/{object_name}:
+    delete:
+      tags:
+      - Alibaba Cloud
+      - alibaba
+      summary: Delete File
+      description: Delete file from OSS
+      operationId: delete_file_alibaba_oss_delete__object_name__delete
+      parameters:
+      - name: object_name
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Object Name
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /contracts/:
+    get:
+      tags:
+      - Contracts
+      - contracts
+      summary: List all contracts (newest first)
+      operationId: list_contracts_contracts__get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/ContractOut'
+                type: array
+                title: Response List Contracts Contracts  Get
+  /contracts/{contract_id}:
+    get:
+      tags:
+      - Contracts
+      - contracts
+      summary: Fetch a single contract by ID
+      operationId: get_contract_contracts__contract_id__get
+      parameters:
+      - name: contract_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          title: Contract Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContractOut'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /contracts/{contract_id}/ledger:
+    get:
+      tags:
+      - Contracts
+      - contracts
+      summary: Get the GO+ investment ledger for a contract
+      operationId: get_ledger_contracts__contract_id__ledger_get
+      parameters:
+      - name: contract_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          title: Contract Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LedgerOut'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /contracts/wallet/{user_id}:
+    get:
+      tags:
+      - Contracts
+      - contracts
+      summary: Get wallet balance for a merchant or supplier
+      operationId: get_wallet_contracts_wallet__user_id__get
+      parameters:
+      - name: user_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          title: User Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WalletOut'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /contracts/propose:
+    post:
+      tags:
+      - Contracts
+      - contracts
+      summary: '[Supplier] Propose a new contract with invoice details'
+      description: 'Supplier creates the contract. No merchant linked yet; no funds
+        move.
+
+
+        State transition: (none) -> PROPOSED'
+      operationId: propose_contracts_propose_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContractPropose'
+        required: true
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContractOut'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /contracts/{contract_id}/product:
+    patch:
+      tags:
+      - Contracts
+      - contracts
+      summary: Update product fields for a contract
+      operationId: patch_contract_product_contracts__contract_id__product_patch
+      parameters:
+      - name: contract_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          title: Contract Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateContractProductRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContractOut'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /contracts/{contract_id}/metadata:
+    patch:
+      tags:
+      - Contracts
+      - contracts
+      summary: Update non-product contract metadata fields
+      operationId: patch_contract_metadata_contracts__contract_id__metadata_patch
+      parameters:
+      - name: contract_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          title: Contract Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateContractMetadataRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContractOut'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /contracts/product/bulk-json:
+    post:
+      tags:
+      - Contracts
+      - contracts
+      summary: Bulk update contract product fields from JSON list
+      operationId: bulk_update_contract_products_contracts_product_bulk_json_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              items:
+                $ref: '#/components/schemas/BulkProductUpdateItem'
+              type: array
+              title: Updates
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BulkProductUpdateResult'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /contracts/metadata/bulk-json:
+    post:
+      tags:
+      - Contracts
+      - contracts
+      summary: Bulk update non-product contract metadata from JSON list
+      operationId: bulk_update_contract_metadata_contracts_metadata_bulk_json_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              items:
+                $ref: '#/components/schemas/BulkMetadataUpdateItem'
+              type: array
+              title: Updates
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BulkMetadataUpdateResult'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /contracts/agree:
+    post:
+      tags:
+      - Contracts
+      - contracts
+      summary: '[Merchant] Accept a supplier''s contract proposal'
+      description: 'Merchant signs the contract. Links merchant_id; no funds move
+        yet.
+
+
+        State transition: PROPOSED -> AGREED'
+      operationId: agree_contracts_agree_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MerchantAgreeRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContractOut'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /contracts/fund:
+    post:
+      tags:
+      - Contracts
+      - contracts
+      summary: '[System/Merchant] Move funds from merchant wallet into GO+ vault'
+      description: 'Atomically debits the merchant wallet and seeds the investment_ledger.
+
+        Yield accrual begins immediately. Supplier is notified.
+
+
+        State transition: AGREED -> FUNDED_INVESTED'
+      operationId: fund_contracts_fund_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FundContractRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FundContractResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /contracts/yield/accrue:
+    post:
+      tags:
+      - Contracts
+      - contracts
+      summary: '[Cron/Demo] Accrue one day''s interest for a FUNDED_INVESTED contract'
+      description: 'Calculates and persists daily interest.
+
+
+        Formula: daily_interest = (amount_held x daily_yield_rate) / 365
+
+
+        Call every 24 h via APScheduler, or hit manually during demo to simulate
+
+        yield growth without waiting for real days to pass.'
+      operationId: yield_accrue_contracts_yield_accrue_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccrueYieldRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LedgerOut'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /contracts/settle:
+    post:
+      tags:
+      - Contracts
+      - contracts
+      summary: '[Merchant] Confirm delivery and release settlement payout'
+      description: "Merchant triggers the final settlement after confirming delivery.\n\
+        \nSettlement split:\n    Supplier <- full principal (amount_held)\n    Merchant\
+        \ <- accrued interest as cashback (rebate)\n\nState transition: FUNDED_INVESTED\
+        \ -> SETTLED"
+      operationId: settle_contracts_settle_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SettleRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SettleResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /:
+    get:
+      summary: Root
+      operationId: root__get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+components:
+  schemas:
+    AccrueYieldRequest:
+      properties:
+        contract_id:
+          type: string
+          format: uuid
+          title: Contract Id
+      type: object
+      required:
+      - contract_id
+      title: AccrueYieldRequest
+    AwsIdentity:
+      properties:
+        account:
+          type: string
+          title: Account
+        arn:
+          type: string
+          title: Arn
+        user_id:
+          type: string
+          title: User Id
+        region:
+          type: string
+          title: Region
+        profile:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Profile
+      type: object
+      required:
+      - account
+      - arn
+      - user_id
+      - region
+      title: AwsIdentity
+    BedrockChatRequest:
+      properties:
+        message:
+          type: string
+          minLength: 1
+          title: Message
+        system_prompt:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: System Prompt
+        max_tokens:
+          type: integer
+          maximum: 4096.0
+          minimum: 1.0
+          title: Max Tokens
+          default: 512
+        temperature:
+          type: number
+          maximum: 1.0
+          minimum: 0.0
+          title: Temperature
+          default: 0.2
+      type: object
+      required:
+      - message
+      title: BedrockChatRequest
+    BedrockChatResponse:
+      properties:
+        model_id:
+          type: string
+          title: Model Id
+        region:
+          type: string
+          title: Region
+        output_text:
+          type: string
+          title: Output Text
+      type: object
+      required:
+      - model_id
+      - region
+      - output_text
+      title: BedrockChatResponse
+    Body_upload_file_alibaba_oss_upload_post:
+      properties:
+        file:
+          type: string
+          format: binary
+          title: File
+      type: object
+      required:
+      - file
+      title: Body_upload_file_alibaba_oss_upload_post
+    BulkMetadataUpdateItem:
+      properties:
+        contract_id:
+          anyOf:
+          - type: string
+            format: uuid
+          - type: 'null'
+          title: Contract Id
+        invoice_num:
+          anyOf:
+          - type: string
+            maxLength: 50
+          - type: 'null'
+          title: Invoice Num
+        business_name:
+          anyOf:
+          - type: string
+            maxLength: 255
+          - type: 'null'
+          title: Business Name
+        supplier_name:
+          anyOf:
+          - type: string
+            maxLength: 255
+          - type: 'null'
+          title: Supplier Name
+        supplier_ph:
+          anyOf:
+          - type: string
+            maxLength: 20
+          - type: 'null'
+          title: Supplier Ph
+        supplier_location:
+          anyOf:
+          - type: string
+            maxLength: 2000
+          - type: 'null'
+          title: Supplier Location
+        receiver_name:
+          anyOf:
+          - type: string
+            maxLength: 255
+          - type: 'null'
+          title: Receiver Name
+        receiver_ph:
+          anyOf:
+          - type: string
+            maxLength: 20
+          - type: 'null'
+          title: Receiver Ph
+        receiver_location:
+          anyOf:
+          - type: string
+            maxLength: 2000
+          - type: 'null'
+          title: Receiver Location
+        invoice_ref:
+          anyOf:
+          - type: string
+            maxLength: 128
+          - type: 'null'
+          title: Invoice Ref
+        net_days:
+          anyOf:
+          - type: string
+            maxLength: 16
+          - type: 'null'
+          title: Net Days
+        description:
+          anyOf:
+          - type: string
+            maxLength: 512
+          - type: 'null'
+          title: Description
+      type: object
+      title: BulkMetadataUpdateItem
+    BulkMetadataUpdateResult:
+      properties:
+        updated:
+          items:
+            $ref: '#/components/schemas/ContractOut'
+          type: array
+          title: Updated
+        failed:
+          items:
+            additionalProperties:
+              type: string
+            type: object
+          type: array
+          title: Failed
+      type: object
+      required:
+      - updated
+      - failed
+      title: BulkMetadataUpdateResult
+    BulkProductUpdateItem:
+      properties:
+        contract_id:
+          anyOf:
+          - type: string
+            format: uuid
+          - type: 'null'
+          title: Contract Id
+        invoice_num:
+          anyOf:
+          - type: string
+            maxLength: 50
+          - type: 'null'
+          title: Invoice Num
+        product:
+          anyOf:
+          - type: string
+            maxLength: 255
+          - type: 'null'
+          title: Product
+        quantity:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: string
+          - type: 'null'
+          title: Quantity
+        price_per_unit:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: string
+          - type: 'null'
+          title: Price Per Unit
+        total_price:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: string
+          - type: 'null'
+          title: Total Price
+        signature_url:
+          anyOf:
+          - type: string
+            maxLength: 2000
+          - type: 'null'
+          title: Signature Url
+      type: object
+      title: BulkProductUpdateItem
+    BulkProductUpdateResult:
+      properties:
+        updated:
+          items:
+            $ref: '#/components/schemas/ContractOut'
+          type: array
+          title: Updated
+        failed:
+          items:
+            additionalProperties:
+              type: string
+            type: object
+          type: array
+          title: Failed
+      type: object
+      required:
+      - updated
+      - failed
+      title: BulkProductUpdateResult
+    ContractOut:
+      properties:
+        id:
+          type: string
+          format: uuid
+          title: Id
+        invoice_num:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Invoice Num
+        supplier_id:
+          type: string
+          format: uuid
+          title: Supplier Id
+        merchant_id:
+          anyOf:
+          - type: string
+            format: uuid
+          - type: 'null'
+          title: Merchant Id
+        business_name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Business Name
+        supplier_name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Supplier Name
+        supplier_ph:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Supplier Ph
+        supplier_location:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Supplier Location
+        receiver_name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Receiver Name
+        receiver_ph:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Receiver Ph
+        receiver_location:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Receiver Location
+        product:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Product
+        quantity:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Quantity
+        price_per_unit:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Price Per Unit
+        total_price:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Total Price
+        signature_url:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Signature Url
+        principal_amount:
+          type: string
+          title: Principal Amount
+        total_amount:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Total Amount
+        status:
+          type: string
+          title: Status
+        yield_rate:
+          type: string
+          title: Yield Rate
+        invoice_ref:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Invoice Ref
+        net_days:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Net Days
+        description:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Description
+        date_created:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Date Created
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+        updated_at:
+          type: string
+          format: date-time
+          title: Updated At
+        agreed_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Agreed At
+        approved_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Approved At
+        funded_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Funded At
+        solved_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Solved At
+        settled_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Settled At
+      type: object
+      required:
+      - id
+      - invoice_num
+      - supplier_id
+      - merchant_id
+      - business_name
+      - supplier_name
+      - supplier_ph
+      - supplier_location
+      - receiver_name
+      - receiver_ph
+      - receiver_location
+      - product
+      - quantity
+      - price_per_unit
+      - total_price
+      - signature_url
+      - principal_amount
+      - total_amount
+      - status
+      - yield_rate
+      - invoice_ref
+      - net_days
+      - description
+      - date_created
+      - created_at
+      - updated_at
+      - agreed_at
+      - approved_at
+      - funded_at
+      - solved_at
+      - settled_at
+      title: ContractOut
+    ContractPropose:
+      properties:
+        supplier_id:
+          type: string
+          format: uuid
+          title: Supplier Id
+          description: UUID of the proposing supplier
+        invoice_num:
+          anyOf:
+          - type: string
+            maxLength: 50
+          - type: 'null'
+          title: Invoice Num
+        merchant_id:
+          anyOf:
+          - type: string
+            format: uuid
+          - type: 'null'
+          title: Merchant Id
+          description: Optional merchant UUID
+        business_name:
+          anyOf:
+          - type: string
+            maxLength: 255
+          - type: 'null'
+          title: Business Name
+        supplier_name:
+          anyOf:
+          - type: string
+            maxLength: 255
+          - type: 'null'
+          title: Supplier Name
+        supplier_ph:
+          anyOf:
+          - type: string
+            maxLength: 20
+          - type: 'null'
+          title: Supplier Ph
+        supplier_location:
+          anyOf:
+          - type: string
+            maxLength: 2000
+          - type: 'null'
+          title: Supplier Location
+        receiver_name:
+          anyOf:
+          - type: string
+            maxLength: 255
+          - type: 'null'
+          title: Receiver Name
+        receiver_ph:
+          anyOf:
+          - type: string
+            maxLength: 20
+          - type: 'null'
+          title: Receiver Ph
+        receiver_location:
+          anyOf:
+          - type: string
+            maxLength: 2000
+          - type: 'null'
+          title: Receiver Location
+        product:
+          anyOf:
+          - type: string
+            maxLength: 255
+          - type: 'null'
+          title: Product
+        quantity:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: string
+          - type: 'null'
+          title: Quantity
+        price_per_unit:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: string
+          - type: 'null'
+          title: Price Per Unit
+        total_price:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: string
+          - type: 'null'
+          title: Total Price
+        signature_url:
+          anyOf:
+          - type: string
+            maxLength: 2000
+          - type: 'null'
+          title: Signature Url
+        principal_amount:
+          anyOf:
+          - type: number
+            exclusiveMinimum: 0.0
+          - type: string
+          title: Principal Amount
+          description: Invoice value in MYR
+        total_amount:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: string
+          - type: 'null'
+          title: Total Amount
+        yield_rate:
+          anyOf:
+          - type: number
+            maximum: 1.0
+            minimum: 0.0
+          - type: string
+          title: Yield Rate
+          description: Annual yield rate (e.g. 0.0350 = 3.5% p.a.)
+          default: '0.0350'
+        invoice_ref:
+          anyOf:
+          - type: string
+            maxLength: 128
+          - type: 'null'
+          title: Invoice Ref
+        net_days:
+          anyOf:
+          - type: string
+            maxLength: 16
+          - type: 'null'
+          title: Net Days
+          examples:
+          - Net-14
+          - Net-30
+        description:
+          anyOf:
+          - type: string
+            maxLength: 512
+          - type: 'null'
+          title: Description
+      type: object
+      required:
+      - supplier_id
+      - principal_amount
+      title: ContractPropose
+    FileUploadResponse:
+      properties:
+        status:
+          type: string
+          title: Status
+        url:
+          type: string
+          title: Url
+        object_name:
+          type: string
+          title: Object Name
+      type: object
+      required:
+      - status
+      - url
+      - object_name
+      title: FileUploadResponse
+    FundContractRequest:
+      properties:
+        contract_id:
+          type: string
+          format: uuid
+          title: Contract Id
+      type: object
+      required:
+      - contract_id
+      title: FundContractRequest
+    FundContractResponse:
+      properties:
+        contract:
+          $ref: '#/components/schemas/ContractOut'
+        ledger:
+          $ref: '#/components/schemas/LedgerOut'
+        supplier_notified:
+          type: boolean
+          title: Supplier Notified
+          default: true
+        message:
+          type: string
+          title: Message
+      type: object
+      required:
+      - contract
+      - ledger
+      - message
+      title: FundContractResponse
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    LedgerOut:
+      properties:
+        contract_id:
+          type: string
+          format: uuid
+          title: Contract Id
+        amount_held:
+          type: string
+          title: Amount Held
+        daily_yield_rate:
+          type: string
+          title: Daily Yield Rate
+        accrued_interest:
+          type: string
+          title: Accrued Interest
+        last_accrual_date:
+          type: string
+          format: date-time
+          title: Last Accrual Date
+      type: object
+      required:
+      - contract_id
+      - amount_held
+      - daily_yield_rate
+      - accrued_interest
+      - last_accrual_date
+      title: LedgerOut
+    MerchantAgreeRequest:
+      properties:
+        contract_id:
+          type: string
+          format: uuid
+          title: Contract Id
+        merchant_id:
+          type: string
+          format: uuid
+          title: Merchant Id
+          description: UUID of the agreeing merchant
+      type: object
+      required:
+      - contract_id
+      - merchant_id
+      title: MerchantAgreeRequest
+    SettleRequest:
+      properties:
+        contract_id:
+          type: string
+          format: uuid
+          title: Contract Id
+      type: object
+      required:
+      - contract_id
+      title: SettleRequest
+    SettleResponse:
+      properties:
+        contract_id:
+          type: string
+          format: uuid
+          title: Contract Id
+        status:
+          type: string
+          title: Status
+        payout_to_supplier:
+          type: string
+          title: Payout To Supplier
+          description: Full principal released to supplier
+        rebate_to_merchant:
+          type: string
+          title: Rebate To Merchant
+          description: Accrued interest returned to merchant as cashback
+        accrued_interest_captured:
+          type: string
+          title: Accrued Interest Captured
+      type: object
+      required:
+      - contract_id
+      - status
+      - payout_to_supplier
+      - rebate_to_merchant
+      - accrued_interest_captured
+      title: SettleResponse
+    UpdateContractMetadataRequest:
+      properties:
+        invoice_num:
+          anyOf:
+          - type: string
+            maxLength: 50
+          - type: 'null'
+          title: Invoice Num
+        business_name:
+          anyOf:
+          - type: string
+            maxLength: 255
+          - type: 'null'
+          title: Business Name
+        supplier_name:
+          anyOf:
+          - type: string
+            maxLength: 255
+          - type: 'null'
+          title: Supplier Name
+        supplier_ph:
+          anyOf:
+          - type: string
+            maxLength: 20
+          - type: 'null'
+          title: Supplier Ph
+        supplier_location:
+          anyOf:
+          - type: string
+            maxLength: 2000
+          - type: 'null'
+          title: Supplier Location
+        receiver_name:
+          anyOf:
+          - type: string
+            maxLength: 255
+          - type: 'null'
+          title: Receiver Name
+        receiver_ph:
+          anyOf:
+          - type: string
+            maxLength: 20
+          - type: 'null'
+          title: Receiver Ph
+        receiver_location:
+          anyOf:
+          - type: string
+            maxLength: 2000
+          - type: 'null'
+          title: Receiver Location
+        invoice_ref:
+          anyOf:
+          - type: string
+            maxLength: 128
+          - type: 'null'
+          title: Invoice Ref
+        net_days:
+          anyOf:
+          - type: string
+            maxLength: 16
+          - type: 'null'
+          title: Net Days
+        description:
+          anyOf:
+          - type: string
+            maxLength: 512
+          - type: 'null'
+          title: Description
+      type: object
+      title: UpdateContractMetadataRequest
+    UpdateContractProductRequest:
+      properties:
+        product:
+          anyOf:
+          - type: string
+            maxLength: 255
+          - type: 'null'
+          title: Product
+        quantity:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: string
+          - type: 'null'
+          title: Quantity
+        price_per_unit:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: string
+          - type: 'null'
+          title: Price Per Unit
+        total_price:
+          anyOf:
+          - type: number
+            minimum: 0.0
+          - type: string
+          - type: 'null'
+          title: Total Price
+        signature_url:
+          anyOf:
+          - type: string
+            maxLength: 2000
+          - type: 'null'
+          title: Signature Url
+      type: object
+      title: UpdateContractProductRequest
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+    WalletOut:
+      properties:
+        user_id:
+          type: string
+          format: uuid
+          title: User Id
+        balance:
+          type: string
+          title: Balance
+        currency:
+          type: string
+          title: Currency
+      type: object
+      required:
+      - user_id
+      - balance
+      - currency
+      title: WalletOut

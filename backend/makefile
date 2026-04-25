@@ -21,4 +21,7 @@ start:
 	source venv/bin/activate
 	pip install -r requirements.txt
 	uvicorn app.main:app --reload
+
+db-create:
+	python -m app.db.migrations
 	
