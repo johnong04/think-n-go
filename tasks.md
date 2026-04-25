@@ -115,6 +115,21 @@ Hackathon execution plan derived from [specs.md](specs.md). Frontend-first, demo
 - [ ] **7.4** Record a fallback screen capture in case live demo network fails — drop to `frontend/public/demo-fallback.mp4`
 - [ ] **7.5** Set Next.js metadata (title, OG image, favicon) — judges will glance at the tab
 
+## Phase 8 — Realism pass (post-Phase 4 refactor)
+
+- [x] **8.1** Two-scenario demo wired end-to-end
+  - Scenario A: dashboard's "Generate Instant Liquidity" CTA → swarm runs t1-t3 → mobile gets push notification (M4) → Ahmad accepts → swarm runs t4-t5 → ExecutionReceipt + KPI tick.
+  - Scenario B: mobile's "Fund & Order" → dashboard swarm runs t1-t2 (predict + underwrite) → pause → Ahmad locks on M3 → swarm runs t3-t4 (lock + verify) → settled.
+  - Pause/resume baked into `SCENARIO_TIMINGS` config in `lib/swarm-machine.ts`.
+- [x] **8.2** Dashboard mode switch removed
+  - `mode-switch.tsx` deleted; KPIs / chart / table no longer mode-aware. Dashboard is canonically wholesaler.
+- [x] **8.3** Mobile persona toggle + wholesaler-side screens removed
+  - `persona-toggle.tsx` and the three W1/W2/W3 screens deleted. Mobile is canonically Ahmad's phone.
+- [x] **8.4** ShortfallAlert at top of canvas
+  - State-driven banner (`open` / `in-flight` / `resolved`) with the "Generate Instant Liquidity" CTA. Replaces the old ArbitrageBanner.
+- [x] **8.5** Bus event types extended
+  - Added `wholesaler:liquidation-triggered` and `wholesaler:liquidity-received` to the BusEvent union for the cross-window choreography.
+
 ## Explicitly NOT doing (hackathon scope)
 
 These are listed so a future agent doesn't waste time on them:
@@ -138,6 +153,7 @@ Append-only. When you finish a milestone or learn something a fresh-context agen
 - **YYYY-MM-DD** — what changed / what was learned. (author or agent name)
 -->
 
+- **2026-04-26** — Realism pass complete. Dashboard ↔ mobile now play through two cohesive scenarios across two browser windows. Scenario A starts on the dashboard ShortfallAlert ("Generate Instant Liquidity" CTA → publishes `wholesaler:liquidation-triggered`); swarm runs t1-t3, fires `wholesaler:offer-sent` to the mobile, which surfaces M4. Ahmad's Accept fires `merchant:offer-accepted`, swarm runs t4-t5 + receipt, then publishes `wholesaler:liquidity-received` so the dashboard's banner flips to "resolved." Scenario B starts on mobile's M1 (Fund & Order → publishes `merchant:bnpl-funded`); swarm runs t1-t2, pauses, then resumes on `merchant:escrow-locked` from Ahmad's M3 confirm, runs t3-t4 (lock + verify). Both scenarios share one phase machine (idle/t1-t5/awaiting/settled) parameterized by `SCENARIO_TIMINGS[scenario].pauseAfterIndex` + `resumeOn`. Mode switch deleted from dashboard, persona toggle deleted from mobile, W1/W2/W3 screens deleted. Numbers aligned: Ahmad RM 1,000 escrow, 2% (RM 20) discount, wholesaler nets RM 980, GO+ yield over 14d ≈ RM 1.50 at 4% APY → ACCEPT recommendation math is realistic. (Claude)
 - **2026-04-26** — Phase 4 done. `/mobile-mock` is a 390×844 phone shell on TNG-blue (`--tng-blue-app: #1A5FE0`) with a `MERCHANT | WHOLESALER` toggle. Merchant: M1 AI alert → M2 QR scan (auto-advances after 1.8s) → M3 smart contract review (own RM 500 + BNPL RM 500 split bar) → M4 push notification offer (overlay style). Wholesaler: W1 client list (5 mock rows) → W2 liquidation slider (1.0–5.0% discount) → W3 awaiting → settled. Cross-window plumbing: BroadcastChannel `think-n-go-bus`. `wholesaler:offer-sent` triggers M4 to surface even if dispatched from another window (cross-persona demo). Dashboard subscribes in Phase 5+. Two new CSS tokens: `--tng-blue-app` (mobile body), `--tng-red` (QR card brand accent). NO real backend, NO AI calls; everything is `setTimeout` + `useState`. (Claude)
 - **2026-04-25** — Phase 3 done. Right rail now hosts the SwarmConsole orchestrator: SwarmBadge (active/settled state) → AgentFlow (3 nodes + animated SVG dashed connectors) → ToolLog (5 entries streamed across 4 phases) → YieldSlider (1.8%–4.0%, locked while running) → ExecutionReceipt (post-settle). State machine in `lib/swarm-machine.ts`, total run 5s. Vendored 3 Kokonut UI components as inline fallbacks into `components/ui/` (install URLs hit Pro/404 so inline implementations were used instead of shadcn registry). Initiate Swarm CTA inside the Execution node, doubles as Reset after settled. Skipped 21st.dev "Agent Plan" — hand-rolled SVG flow stayed truer to our blue/yellow palette. Wiring to Vercel AI SDK v6 is Phase 5; the ToolLog and AgentFlow already key off a `phase` prop, so swap-in is single-source. Slider uses `@base-ui/react` (not Radix); `onValueChange` receives `readonly number[]` so cast required in yield-slider.tsx. (Claude)
 - **2026-04-25** — Phase 2 done. Dashboard at `/dashboard` renders sidebar + topbar (with merchant/wholesaler mode switch) + KPI strip + Liquidity chart (recharts, animated, SYS.COORD telemetry via onMouseMove/activePayload) + Escrow table (5 rows, status pills) + arbitrage banner (mode-aware copy) + swarm placeholder (right column). Brand tokens applied per design.md §3, fonts loaded (Bricolage / JetBrains Mono / Instrument Serif / Geist) via next/font. `motion` library installed. Mock data centralized in `lib/mock-data.ts` — swap point for Supabase in Phase 6. ESLint flat config added (`eslint.config.mjs`) because Next.js 16 dropped `next lint` subcommand; lint script updated to `eslint app components lib`. (Claude)
