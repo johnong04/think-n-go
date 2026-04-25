@@ -50,13 +50,14 @@ export function FlowConnector({ state, variant = "default" }: Props) {
           <marker
             id={arrowId}
             viewBox="0 0 10 10"
-            refX="6"
+            refX="8"
             refY="5"
-            markerWidth="5"
-            markerHeight="5"
+            markerWidth="6"
+            markerHeight="6"
+            markerUnits="userSpaceOnUse"
             orient="auto-start-reverse"
           >
-            <path d="M 0,0 L 10,5 L 0,10 z" fill={stroke} />
+            <path d="M 0,2 L 8,5 L 0,8 z" fill={stroke} />
           </marker>
         </defs>
         <use
