@@ -16,6 +16,7 @@ async def chat_with_bedrock(
         output_text = converse_text(
             settings=settings,
             message=request.message,
+            model_id=request.model_id,
             system_prompt=request.system_prompt,
             max_tokens=request.max_tokens,
             temperature=request.temperature,
@@ -24,7 +25,7 @@ async def chat_with_bedrock(
         raise HTTPException(status_code=503, detail=str(exc)) from exc
 
     return BedrockChatResponse(
-        model_id=settings.bedrock_model_id,
+        model_id=request.model_id or settings.bedrock_model_id,
         region=settings.aws_bedrock_region,
         output_text=output_text,
     )

@@ -1,0 +1,8 @@
+date,weekday,weekday_avg_inflow_rm,momentum_multiplier,calendar_multiplier,calendar_reasons,forecast_inflow_rm
+2026-04-26,Sunday,298.84,1.0382,1.161,payday window; 5d before public holiday,360.21
+2026-04-27,Monday,481.26,1.0382,1.188,payday window; 4d before public holiday,593.58
+2026-04-28,Tuesday,484.2,1.0382,1.215,payday window; 3d before public holiday,610.78
+2026-04-29,Wednesday,579.47,1.0382,1.242,payday window; 2d before public holiday,747.19
+2026-04-30,Thursday,645.47,1.0382,1.269,payday window; 1d before public holiday,850.39
+2026-05-01,Friday,870.94,1.0382,1.026,payday window; holiday: Labour Day,927.72
+2026-05-02,Saturday,1027.8,1.0382,1.0,normal,1067.06

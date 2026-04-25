@@ -1,0 +1,437 @@
+{
+  "as_of_date": "2026-04-25",
+  "input_assumption": "history has only datetime and signed amount_rm; current balance is provided separately",
+  "current_balance_rm": 760.0,
+  "projected_3_day_inflow_rm": 1564.57,
+  "normal_3_day_baseline_rm": 1264.3,
+  "forecast_ratio_vs_baseline": 1.237,
+  "typical_large_outflow_rm": 1891.05,
+  "typical_cycle_days": 8.0,
+  "last_large_outflow_date": "2026-04-18",
+  "days_since_last_large_outflow": 7,
+  "estimated_cash_gap_rm": 1131.05,
+  "suggested_bnpl_topup_rm": 1150.0,
+  "expected_5pct_daily_repayment_rm": 26.08,
+  "estimated_repayment_days": 45,
+  "demand_pressure_score": 72.3,
+  "demand_pressure_label": "High",
+  "confidence_score": 87.3,
+  "important_caveat": "Large OUT transactions are inferred as restock-like from amount/timing only. The engine does not know the true transaction purpose.",
+  "large_outflow_threshold_rm": 1708.85,
+  "recent_momentum_multiplier": 1.0382,
+  "debug_calculation_details": {
+    "input_snapshot": {
+      "history_start_date": "2026-01-26",
+      "history_end_date": "2026-04-25",
+      "as_of_date": "2026-04-25",
+      "forecast_days": 7,
+      "current_balance_rm": 760.0,
+      "large_outflow_threshold_rm": 1708.85,
+      "holiday_count_loaded": 22,
+      "holidays_loaded": [
+        {
+          "date": "2026-01-01",
+          "holiday_name": "New Year's Day"
+        },
+        {
+          "date": "2026-02-01",
+          "holiday_name": "Thaipusam"
+        },
+        {
+          "date": "2026-02-02",
+          "holiday_name": "Thaipusam (in lieu)"
+        },
+        {
+          "date": "2026-02-17",
+          "holiday_name": "Chinese New Year"
+        },
+        {
+          "date": "2026-02-18",
+          "holiday_name": "Chinese New Year Holiday"
+        },
+        {
+          "date": "2026-03-07",
+          "holiday_name": "Nuzul Al-Quran Day"
+        },
+        {
+          "date": "2026-03-20",
+          "holiday_name": "Hari Raya Aidilfitri"
+        },
+        {
+          "date": "2026-03-21",
+          "holiday_name": "Hari Raya Aidilfitri Holiday"
+        },
+        {
+          "date": "2026-03-22",
+          "holiday_name": "Hari Raya Aidilfitri Holiday"
+        },
+        {
+          "date": "2026-03-23",
+          "holiday_name": "Hari Raya Aidilfitri Holiday"
+        },
+        {
+          "date": "2026-05-01",
+          "holiday_name": "Labour Day"
+        },
+        {
+          "date": "2026-05-27",
+          "holiday_name": "Hari Raya Haji"
+        },
+        {
+          "date": "2026-05-31",
+          "holiday_name": "Wesak Day"
+        },
+        {
+          "date": "2026-06-01",
+          "holiday_name": "Birthday of SPB Yang di Pertuan Agong"
+        },
+        {
+          "date": "2026-06-17",
+          "holiday_name": "Awal Muharram"
+        },
+        {
+          "date": "2026-08-25",
+          "holiday_name": "Maulidur Rasul"
+        },
+        {
+          "date": "2026-08-31",
+          "holiday_name": "National Day"
+        },
+        {
+          "date": "2026-09-16",
+          "holiday_name": "Malaysia Day"
+        },
+        {
+          "date": "2026-11-08",
+          "holiday_name": "Deepavali"
+        },
+        {
+          "date": "2026-11-09",
+          "holiday_name": "Deepavali (in lieu)"
+        },
+        {
+          "date": "2026-12-11",
+          "holiday_name": "Birthday of The Sultan of Selangor"
+        },
+        {
+          "date": "2026-12-25",
+          "holiday_name": "Christmas Day"
+        }
+      ]
+    },
+    "overall_flow_stats": {
+      "transaction_count": 3122,
+      "money_in_txn_count": 3047,
+      "money_out_txn_count": 75,
+      "active_days": 90,
+      "total_money_in_rm": 57033.4,
+      "total_money_out_rm": 23728.63,
+      "net_flow_rm": 33304.77,
+      "avg_daily_money_in_rm": 633.7,
+      "avg_daily_money_out_rm": 263.65,
+      "avg_daily_net_flow_rm": 370.05
+    },
+    "weekday_averages": [
+      {
+        "weekday": "Monday",
+        "observed_days": 13,
+        "avg_money_in_rm": 481.26,
+        "avg_money_out_rm": 185.71,
+        "avg_net_flow_rm": 295.55,
+        "avg_in_txn_count": 25.0,
+        "avg_out_txn_count": 1.0,
+        "min_money_in_rm": 397.88,
+        "max_money_in_rm": 549.03
+      },
+      {
+        "weekday": "Tuesday",
+        "observed_days": 13,
+        "avg_money_in_rm": 484.2,
+        "avg_money_out_rm": 176.13,
+        "avg_net_flow_rm": 308.06,
+        "avg_in_txn_count": 26.62,
+        "avg_out_txn_count": 0.69,
+        "min_money_in_rm": 420.28,
+        "max_money_in_rm": 561.22
+      },
+      {
+        "weekday": "Wednesday",
+        "observed_days": 13,
+        "avg_money_in_rm": 579.47,
+        "avg_money_out_rm": 310.83,
+        "avg_net_flow_rm": 268.64,
+        "avg_in_txn_count": 29.92,
+        "avg_out_txn_count": 0.77,
+        "min_money_in_rm": 506.3,
+        "max_money_in_rm": 661.36
+      },
+      {
+        "weekday": "Thursday",
+        "observed_days": 13,
+        "avg_money_in_rm": 645.47,
+        "avg_money_out_rm": 327.83,
+        "avg_net_flow_rm": 317.64,
+        "avg_in_txn_count": 33.15,
+        "avg_out_txn_count": 0.85,
+        "min_money_in_rm": 560.52,
+        "max_money_in_rm": 727.42
+      },
+      {
+        "weekday": "Friday",
+        "observed_days": 13,
+        "avg_money_in_rm": 870.94,
+        "avg_money_out_rm": 358.18,
+        "avg_net_flow_rm": 512.76,
+        "avg_in_txn_count": 48.69,
+        "avg_out_txn_count": 1.23,
+        "min_money_in_rm": 720.81,
+        "max_money_in_rm": 1003.15
+      },
+      {
+        "weekday": "Saturday",
+        "observed_days": 12,
+        "avg_money_in_rm": 1027.8,
+        "avg_money_out_rm": 312.22,
+        "avg_net_flow_rm": 715.58,
+        "avg_in_txn_count": 54.83,
+        "avg_out_txn_count": 0.58,
+        "min_money_in_rm": 808.67,
+        "max_money_in_rm": 1295.45
+      },
+      {
+        "weekday": "Sunday",
+        "observed_days": 12,
+        "avg_money_in_rm": 298.84,
+        "avg_money_out_rm": 193.26,
+        "avg_net_flow_rm": 105.58,
+        "avg_in_txn_count": 15.83,
+        "avg_out_txn_count": 0.75,
+        "min_money_in_rm": 267.32,
+        "max_money_in_rm": 360.73
+      }
+    ],
+    "momentum_calculation": {
+      "last_7_day_start": "2026-04-18",
+      "last_7_day_end": "2026-04-24",
+      "last_7_day_count": 7,
+      "last_7_avg_inflow_rm": 681.15,
+      "previous_21_day_start": "2026-03-28",
+      "previous_21_day_end": "2026-04-17",
+      "previous_21_day_count": 21,
+      "previous_21_avg_inflow_rm": 656.1,
+      "raw_momentum_ratio": 1.0382,
+      "capped_momentum_multiplier": 1.0382
+    },
+    "large_outflow_rhythm": {
+      "large_outflow_count": 8,
+      "large_outflow_events": [
+        {
+          "date": "2026-01-28",
+          "amount_rm": 1713.66
+        },
+        {
+          "date": "2026-02-05",
+          "amount_rm": 1863.39
+        },
+        {
+          "date": "2026-03-01",
+          "amount_rm": 1924.2
+        },
+        {
+          "date": "2026-03-17",
+          "amount_rm": 1877.45
+        },
+        {
+          "date": "2026-03-25",
+          "amount_rm": 1904.64
+        },
+        {
+          "date": "2026-04-02",
+          "amount_rm": 1942.4
+        },
+        {
+          "date": "2026-04-10",
+          "amount_rm": 2115.44
+        },
+        {
+          "date": "2026-04-18",
+          "amount_rm": 1711.79
+        }
+      ],
+      "gaps_between_large_outflows_days": [
+        8,
+        24,
+        16,
+        8,
+        8,
+        8,
+        8
+      ],
+      "avg_gap_days": 11.43,
+      "median_gap_days": 8,
+      "typical_large_outflow_rm": 1891.05,
+      "typical_cycle_days": 8.0,
+      "last_large_outflow_date": "2026-04-18",
+      "days_since_last_large_outflow": 7,
+      "gap_consistency_score": 0.4901
+    },
+    "forecast_breakdown": [
+      {
+        "date": "2026-04-26",
+        "weekday": "Sunday",
+        "weekday_avg_inflow_rm": 298.84,
+        "momentum_multiplier": 1.0382,
+        "calendar_multiplier": 1.161,
+        "calendar_reasons": "payday window; 5d before public holiday",
+        "forecast_inflow_rm": 360.21
+      },
+      {
+        "date": "2026-04-27",
+        "weekday": "Monday",
+        "weekday_avg_inflow_rm": 481.26,
+        "momentum_multiplier": 1.0382,
+        "calendar_multiplier": 1.188,
+        "calendar_reasons": "payday window; 4d before public holiday",
+        "forecast_inflow_rm": 593.58
+      },
+      {
+        "date": "2026-04-28",
+        "weekday": "Tuesday",
+        "weekday_avg_inflow_rm": 484.2,
+        "momentum_multiplier": 1.0382,
+        "calendar_multiplier": 1.215,
+        "calendar_reasons": "payday window; 3d before public holiday",
+        "forecast_inflow_rm": 610.78
+      },
+      {
+        "date": "2026-04-29",
+        "weekday": "Wednesday",
+        "weekday_avg_inflow_rm": 579.47,
+        "momentum_multiplier": 1.0382,
+        "calendar_multiplier": 1.242,
+        "calendar_reasons": "payday window; 2d before public holiday",
+        "forecast_inflow_rm": 747.19
+      },
+      {
+        "date": "2026-04-30",
+        "weekday": "Thursday",
+        "weekday_avg_inflow_rm": 645.47,
+        "momentum_multiplier": 1.0382,
+        "calendar_multiplier": 1.269,
+        "calendar_reasons": "payday window; 1d before public holiday",
+        "forecast_inflow_rm": 850.39
+      },
+      {
+        "date": "2026-05-01",
+        "weekday": "Friday",
+        "weekday_avg_inflow_rm": 870.94,
+        "momentum_multiplier": 1.0382,
+        "calendar_multiplier": 1.026,
+        "calendar_reasons": "payday window; holiday: Labour Day",
+        "forecast_inflow_rm": 927.72
+      },
+      {
+        "date": "2026-05-02",
+        "weekday": "Saturday",
+        "weekday_avg_inflow_rm": 1027.8,
+        "momentum_multiplier": 1.0382,
+        "calendar_multiplier": 1.0,
+        "calendar_reasons": "normal",
+        "forecast_inflow_rm": 1067.06
+      }
+    ],
+    "demand_pressure_score_calculation": {
+      "formula": "100 * (0.35 * forecast_pressure_score + 0.35 * restock_pressure_score + 0.30 * balance_pressure_score)",
+      "projected_3_day_inflow_rm": 1564.57,
+      "normal_3_day_baseline_rm": 1264.3,
+      "forecast_ratio_vs_baseline": 1.2375,
+      "forecast_pressure_score_0_to_1": 0.6786,
+      "restock_due_score_raw": 0.875,
+      "restock_pressure_score_0_to_1": 0.875,
+      "balance_coverage_ratio": 0.4019,
+      "balance_pressure_score_0_to_1": 0.5981,
+      "weighted_forecast_component_points": 23.75,
+      "weighted_restock_component_points": 30.62,
+      "weighted_balance_component_points": 17.94,
+      "final_demand_pressure_score": 72.3,
+      "final_demand_pressure_label": "High"
+    },
+    "bnpl_repayment_calculation": {
+      "typical_large_outflow_rm": 1891.05,
+      "current_balance_rm": 760.0,
+      "cash_gap_rm": 1131.05,
+      "rounded_topup_step_rm": 50,
+      "suggested_bnpl_topup_rm": 1150.0,
+      "avg_forecast_daily_inflow_next_3d_rm": 521.52,
+      "repayment_rate": 0.05,
+      "expected_daily_repayment_rm": 26.08,
+      "estimated_repayment_days": 45
+    },
+    "confidence_score_calculation": {
+      "formula": "100 * (0.45 * data_volume_score + 0.30 * restock_count_score + 0.25 * pattern_consistency_score)",
+      "active_days": 90,
+      "data_volume_score_0_to_1": 1,
+      "large_outflow_count": 8,
+      "restock_count_score_0_to_1": 1,
+      "pattern_consistency_score_0_to_1": 0.4901,
+      "weighted_data_volume_points": 45.0,
+      "weighted_restock_count_points": 30.0,
+      "weighted_pattern_points": 12.25,
+      "final_confidence_score": 87.3
+    }
+  },
+  "llm_interpretation": {
+    "data_assumption": "Transaction history only has datetime and signed amount_rm. Positive means money IN, negative means money OUT. Current balance is provided separately.",
+    "result": {
+      "demand_pressure_score": 72.3,
+      "demand_pressure_label": "High",
+      "confidence_score": 87.3
+    },
+    "calculation_trace": {
+      "forecast_ratio_vs_baseline": 1.237,
+      "recent_momentum_multiplier": 1.0382,
+      "projected_3_day_inflow_rm": 1564.57,
+      "normal_3_day_baseline_rm": 1264.3,
+      "typical_large_outflow_rm": 1891.05,
+      "typical_cycle_days": 8.0,
+      "last_large_outflow_date": "2026-04-18",
+      "days_since_last_large_outflow": 7,
+      "current_balance_rm": 760.0,
+      "balance_coverage_ratio": 0.4019,
+      "estimated_cash_gap_rm": 1131.05,
+      "suggested_bnpl_topup_rm": 1150.0,
+      "expected_5pct_daily_repayment_rm": 26.08,
+      "estimated_repayment_days": 45
+    },
+    "reason_codes": [
+      {
+        "code": "INFLOW_ABOVE_BASELINE",
+        "severity": "medium",
+        "message": "Projected 3-day money-in is RM1,564.57, which is 23.8% above the normal 3-day baseline of RM1,264.30."
+      },
+      {
+        "code": "LARGE_OUTFLOW_CYCLE_DUE",
+        "severity": "high",
+        "message": "A large OUT pattern appears close to due: the typical cycle is 8 days, and it has been 7 days since the last large OUT on 2026-04-18."
+      },
+      {
+        "code": "LOW_BALANCE_VS_OUTFLOW",
+        "severity": "high",
+        "message": "Current balance is RM760.00, covering only 40.2% of the typical large OUT amount of RM1,891.05."
+      },
+      {
+        "code": "BNPL_TOPUP_RECOMMENDED",
+        "severity": "action",
+        "message": "Estimated cash gap is RM1,131.05, so the suggested BNPL top-up is rounded to RM1,150.00."
+      },
+      {
+        "code": "REPAYMENT_ESTIMATE",
+        "severity": "info",
+        "message": "At a 5% repayment rate from projected money-in, expected repayment is RM26.08 per day over about 45 days."
+      }
+    ],
+    "caveats": [
+      "Large OUT transactions are inferred as restock-like from amount/timing only. The engine does not know the true transaction purpose."
+    ]
+  }
+}
