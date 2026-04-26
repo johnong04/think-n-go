@@ -402,15 +402,6 @@ export function SwarmConsole({ scenario, phase, onScenarioChange, onPhaseChange 
   const isRunning = phase !== "idle" && phase !== "settled";
   const isAwaiting = phase === "awaiting";
 
-  function reset() {
-    cancelInFlight();
-    setLiveEntries([]);
-    setReceipt(null);
-    setScenario(null);
-    setPhase("idle");
-    runningRef.current = false;
-  }
-
   return (
     <aside className="relative flex h-full flex-col overflow-hidden border-l border-tng-blue bg-gradient-to-b from-paper to-tng-blue-tint">
       <BeamsBackground intensity={0.14} />
@@ -437,19 +428,20 @@ export function SwarmConsole({ scenario, phase, onScenarioChange, onPhaseChange 
         />
 
         <div className="mt-2">
-          <button
-            type="button"
-            onClick={phase === "settled" ? reset : undefined}
-            disabled={phase !== "settled"}
+          <div
             className={cn(
-              "inline-flex w-full items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold transition-colors",
-              phase === "settled"
-                ? "bg-ink text-paper hover:bg-tng-blue-deep"
-                : "cursor-not-allowed bg-paper-grid text-muted-foreground"
+              "rounded-lg border border-stroke-soft px-3 py-2 text-center font-mono text-[10px] uppercase tracking-[0.1em]",
+              phase === "settled" ? "text-muted-foreground" : "text-ink"
             )}
           >
-            {phase === "settled" ? "Reset Demo" : phase === "idle" ? "Triggered from Dashboard" : isAwaiting ? "Awaiting mobile…" : "Running…"}
-          </button>
+            {phase === "settled"
+              ? "settled · use footer reset"
+              : phase === "idle"
+                ? "triggered from dashboard"
+                : isAwaiting
+                  ? "awaiting mobile…"
+                  : "running…"}
+          </div>
         </div>
 
         <ToolLog scenario={scenario} phase={phase} liveEntries={liveEntries} />
