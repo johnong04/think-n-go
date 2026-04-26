@@ -12,6 +12,8 @@ type Props = {
   onAccept: () => void;
   onDecline: () => void;
   settled: boolean;
+  /** Bedrock-generated arbitrage reasoning, char-streamed in. */
+  arbitrageText?: string;
 };
 
 export function ScreenMerchantOffer({
@@ -20,6 +22,7 @@ export function ScreenMerchantOffer({
   onAccept,
   onDecline,
   settled,
+  arbitrageText,
 }: Props) {
   const discountAmount = Math.round((draft.totalRm * discountPct) / 100);
   const payout = draft.totalRm - discountAmount;
@@ -81,6 +84,17 @@ export function ScreenMerchantOffer({
                 <Stat label="Discount" value={`-${fmtRm(discountAmount, 2)}`} accent />
                 <Stat label="Wholesaler nets" value={fmtRm(payout, 2)} />
               </div>
+
+              {arbitrageText ? (
+                <div className="mt-3 rounded-xl bg-tng-blue-app/5 p-3">
+                  <p className="mb-1 font-mono text-[9px] uppercase tracking-[0.1em] text-tng-blue-app">
+                    Yield arbitrage
+                  </p>
+                  <p className="font-editorial text-[11px] italic leading-snug text-ink">
+                    {arbitrageText}
+                  </p>
+                </div>
+              ) : null}
 
               <div className="mt-4 flex gap-2">
                 <TngButton variant="secondary" onClick={onDecline}>

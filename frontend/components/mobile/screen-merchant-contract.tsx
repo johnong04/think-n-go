@@ -13,6 +13,8 @@ type Props = {
   expectedDailyRepaymentRm: number;
   onLock: () => void;
   onBack: () => void;
+  /** Bedrock-generated underwriting reasoning, char-streamed in. */
+  underwritingText?: string;
 };
 
 export function ScreenMerchantContract({
@@ -21,6 +23,7 @@ export function ScreenMerchantContract({
   expectedDailyRepaymentRm,
   onLock,
   onBack,
+  underwritingText,
 }: Props) {
   const totalYield = draft.dailyYieldRm * draft.termDays;
   const ownPct = draft.totalRm > 0 ? (draft.ownFundsRm / draft.totalRm) * 100 : 0;
@@ -191,6 +194,17 @@ export function ScreenMerchantContract({
             <Row icon={<ReceiptText className="size-4" />} label="Supplier note" value={draft.notes} />
           ) : null}
         </TngCard>
+
+        {underwritingText ? (
+          <div className="rounded-2xl border border-tng-yellow/40 bg-tng-yellow/10 p-3">
+            <p className="mb-1 font-mono text-[9px] uppercase tracking-[0.1em] text-tng-blue-app">
+              AI Underwriting
+            </p>
+            <p className="font-editorial text-[12px] italic leading-snug text-ink">
+              {underwritingText}
+            </p>
+          </div>
+        ) : null}
 
         <div className="mt-2 flex flex-col gap-2">
           <TngButton onClick={onLock}>
