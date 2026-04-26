@@ -1,11 +1,68 @@
+"use client";
+
+import { useCallback, useEffect, useState } from "react";
 import { ArrowRight } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { escrowRows, formatRm } from "@/lib/mock-data";
+import { useDemoBus } from "@/lib/demo-bus";
+import { getActiveContracts, type ContractRow } from "@/lib/api";
+import { escrowRows as fallbackRows, formatRm, type EscrowRow, type EscrowStatus } from "@/lib/mock-data";
 import { StatusPill } from "./status-pill";
 
-type Props = Record<string, never>;
+function mapStatus(backend: string, netDays: string | null): EscrowStatus {
+  if (backend === "SOLVED" || backend === "SETTLED") return "Posted";
+  if (backend === "RELEASED") return "Release Pending";
+  const days = parseTermDays(netDays);
+  return days >= 30 ? "Net-30 Escrow" : "Net-14 Locked";
+}
 
-export function EscrowTable(_props?: Props) {
+function parseTermDays(netDays: string | null): number {
+  const m = (netDays ?? "").match(/\d+/);
+  return m ? Number(m[0]) : 14;
+}
+
+function daysSince(iso: string): number {
+  const ts = Date.parse(iso);
+  if (!Number.isFinite(ts)) return 0;
+  return Math.max(0, Math.floor((Date.now() - ts) / (1000 * 60 * 60 * 24)));
+}
+
+export function EscrowTable() {
+  const [rows, setRows] = useState<EscrowRow[]>(fallbackRows);
+
+  const refresh = useCallback(async () => {
+    try {
+      const live = await getActiveContracts();
+      const mapped = live.slice(0, 8).map((c): EscrowRow => ({
+        id: c.id,
+        merchant: c.receiver_name ?? "—",
+        business: c.business_name ?? "—",
+        status: mapStatus(c.status, c.net_days),
+        value: Number(c.principal_amount),
+        termDays: parseTermDays(c.net_days),
+        daysIn: daysSince(c.date_created),
+      }));
+      if (mapped.length) setRows(mapped);
+    } catch (err) {
+      console.warn("Contracts fetch failed, using fallback", err);
+    }
+  }, []);
+
+  useEffect(() => {
+    void refresh();
+  }, [refresh]);
+
+  useDemoBus(
+    useCallback((event) => {
+      if (
+        event.type === "merchant:escrow-locked" ||
+        event.type === "merchant:offer-accepted" ||
+        event.type === "system:reset"
+      ) {
+        void refresh();
+      }
+    }, [refresh])
+  );
+
   return (
     <section className="border border-stroke-soft bg-card">
       <header className="flex items-center justify-between border-b border-stroke-soft px-6 py-4">
@@ -36,7 +93,7 @@ export function EscrowTable(_props?: Props) {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {escrowRows.map((row) => (
+          {rows.map((row) => (
             <TableRow
               key={row.id}
               className="group relative border-b border-stroke-soft transition-colors last:border-b-0 hover:bg-paper-grid"
