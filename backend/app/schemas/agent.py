@@ -16,6 +16,7 @@ class OptimizeDiscountResponse(BaseModel):
     suggested_discount_rate: Decimal = Field(..., description="Calculated discount rate (e.g., 0.01 for 1%)")
     target_contracts: List[uuid.UUID] = Field(..., description="List of contract IDs this discount applies to")
     message: str
+    reasoning_text: str = Field(default="", description="Bedrock-generated reasoning streamed to UI")
 
 class AuditArbitrageRequest(BaseModel):
     contract_id: uuid.UUID
@@ -25,6 +26,7 @@ class ConsultantViewResponse(BaseModel):
     yield_calculation: str = Field(..., description="Mathematical output of yield over remaining days")
     discount_capture: str = Field(..., description="Mathematical output of the discount amount")
     decision_engine: str = Field(..., description="ACCEPT or REJECT based on Consultant Roast logic")
+    reasoning_text: str = Field(default="", description="Bedrock-generated reasoning streamed to UI")
 
 class SettleEarlyRequest(BaseModel):
     contract_id: uuid.UUID
@@ -38,6 +40,7 @@ class VelocityAnalysisResponse(BaseModel):
     merchant_id: uuid.UUID
     predicted_shortfall_hours: int = Field(..., description="Hours until premium product stocks out")
     message: str
+    reasoning_text: str = Field(default="", description="Bedrock-generated reasoning streamed to UI")
 
 class UnderwriteRequest(BaseModel):
     merchant_id: uuid.UUID
@@ -50,6 +53,15 @@ class UnderwriteResponse(BaseModel):
     principal: Decimal
     funding_source: str
     message: str
+    reasoning_text: str = Field(default="", description="Bedrock-generated reasoning streamed to UI")
+
+class SettleEarlyResponse(BaseModel):
+    contract_id: uuid.UUID
+    status: str
+    payout_to_supplier_rm: Decimal
+    rebate_to_merchant_rm: Decimal
+    ledger_hash: str = Field(..., description="Synthetic hex hash for the receipt UI")
+    reasoning_text: str = Field(default="", description="Bedrock-generated reasoning streamed to UI")
 
 class AuthorizeDispatchRequest(BaseModel):
     contract_id: uuid.UUID
