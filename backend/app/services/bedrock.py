@@ -50,3 +50,48 @@ def converse_text(
         raise BedrockError(message_text) from exc
     except BotoCoreError as exc:
         raise BedrockError(str(exc)) from exc
+
+
+import json
+import logging
+
+_logger = logging.getLogger(__name__)
+
+
+def generate_reasoning(
+    settings: Settings,
+    *,
+    role: str,
+    task: str,
+    facts: dict,
+    fallback: str,
+    max_chars: int = 280,
+) -> str:
+    """One-shot Bedrock call returning a plain-text reasoning blurb.
+
+    Returns `fallback` on any error so callers never have to handle Bedrock failures.
+    """
+    system_prompt = (
+        f"You are the {role} agent in a Malaysian B2B liquidity engine. "
+        f"Task: {task}. "
+        "Reply in plain English (no markdown, no bullets, no headings). "
+        f"Be concrete, cite the numbers from FACTS, and keep it under {max_chars} characters. "
+        "End with a single sentence stating the recommendation or outcome."
+    )
+    user_message = "FACTS:\n" + json.dumps(facts, default=str, indent=2)
+
+    try:
+        text_out = converse_text(
+            settings,
+            user_message,
+            system_prompt=system_prompt,
+            max_tokens=180,
+            temperature=0.3,
+        )
+        cleaned = text_out.replace("**", "").replace("`", "").strip()
+        if len(cleaned) > max_chars:
+            cleaned = cleaned[: max_chars - 1].rstrip() + "…"
+        return cleaned or fallback
+    except Exception as exc:
+        _logger.warning("Bedrock reasoning failed, using fallback: %s", exc)
+        return fallback
