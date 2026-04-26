@@ -24,13 +24,11 @@ export type EscrowRow = {
 };
 
 export const escrowRows: EscrowRow[] = [
-  { id: "e-1", merchant: "Ahmad bin Yusof",   business: "Restoran Selera Kampung",  status: "Net-14 Locked",   value: 1000,   termDays: 14, daysIn: 8  },
+  { id: "e-1", merchant: "Ahmad bin Yusof",   business: "Ayam Gepuk Mak Cik",        status: "Net-14 Locked",   value: 1000,   termDays: 14, daysIn: 0  },
   { id: "e-2", merchant: "Siti Norhaliza",     business: "Mart Wangsa",              status: "Net-14 Locked",   value: 2400,   termDays: 14, daysIn: 11 },
-  { id: "e-3", merchant: "Tan Mei Ling",       business: "Café Hang Tuah",           status: "Release Pending", value: 1820,   termDays: 14, daysIn: 12 },
+  { id: "e-3", merchant: "Tan Mei Ling",       business: "Café Hang Tuah",           status: "Release Pending", value: 1820,   termDays: 14, daysIn: 14 },
   { id: "e-4", merchant: "Mohd Faisal",        business: "Toko Buah Pasar Borong",   status: "Net-30 Escrow",   value: 3200,   termDays: 30, daysIn: 2  },
   { id: "e-5", merchant: "Rajesh Kumar",       business: "Kedai Runcit Sentral",     status: "Posted",          value: 540,    termDays: 30, daysIn: 30 },
-  { id: "e-6", merchant: "Nurul Wholesale",    business: "Pasar Tani Distribution",  status: "Net-30 Escrow",   value: 86400,  termDays: 30, daysIn: 14 },
-  { id: "e-7", merchant: "Petron Mart KL",     business: "Petron Convenience Group", status: "Net-14 Locked",   value: 142800, termDays: 14, daysIn: 5  },
 ];
 
 export function formatRm(value: number, opts?: { decimals?: 0 | 2 }) {
@@ -176,6 +174,8 @@ export type ToolCall = {
   /** Phase position (1..5) at which this entry appears. Index into the active scenario's tool list. */
   appearAtIndex: number;
   scenario: SwarmScenario;
+  /** Filled in from backend response, char-streamed in UI. */
+  reasoningText?: string;
 };
 
 export const toolCallsByScenario: Record<SwarmScenario, ToolCall[]> = {
@@ -216,11 +216,24 @@ export type KpiV2 = {
 const sparkUp   = [40, 45, 42, 48, 52, 49, 55, 58, 56, 62, 64, 68];
 const sparkFlat = [50, 52, 49, 51, 50, 48, 51, 49, 50, 51, 50, 52];
 
+/** Static-only KPI data for cards 3 & 4 (cards 1 & 2 fetch from /dashboard/kpis). */
+export const kpiStaticData: { activeMsmes: KpiV2; goPlusYield: KpiV2 } = {
+  activeMsmes: { caption: "ACTIVE MSMES",  value: "128",       delta: "+ healthy cohort", trend: "up", spark: sparkUp },
+  goPlusYield: { caption: "GO+ YIELD 30D", value: "RM 1,860",  delta: "daily accrual",    trend: "up", spark: sparkUp },
+};
+
+/** Initial / fallback values for cards 1 & 2 before /dashboard/kpis responds. */
+export const kpiInitialFallback: { escrowLocked: KpiV2; liquidity: KpiV2 } = {
+  escrowLocked: { caption: "ESCROW LOCKED",       value: "—",          delta: "loading…",            trend: "up", spark: sparkUp,   livePulse: true },
+  liquidity:    { caption: "LIQUIDITY AVAILABLE", value: "—",          delta: "loading…",            trend: "down", spark: sparkFlat },
+};
+
+/** Legacy export for any consumer not yet migrated. */
 export const kpis: KpiV2[] = [
-  { caption: "ESCROW LOCKED",       value: "RM 145,000", delta: "+ live ledger",       trend: "up", spark: sparkUp,   livePulse: true },
-  { caption: "LIQUIDITY AVAILABLE", value: "RM 37,400",  delta: "RM 800 short today",  trend: "down", spark: sparkFlat },
-  { caption: "ACTIVE MSMES",        value: "128",        delta: "+ healthy cohort",    trend: "up", spark: sparkUp },
-  { caption: "GO+ YIELD 30D",       value: "RM 1,860",   delta: "daily accrual",       trend: "up", spark: sparkUp },
+  kpiInitialFallback.escrowLocked,
+  kpiInitialFallback.liquidity,
+  kpiStaticData.activeMsmes,
+  kpiStaticData.goPlusYield,
 ];
 
 /** Banner copy for the new ShortfallAlert. State-driven, not mode-driven. */
@@ -239,7 +252,7 @@ export const shortfallCopy: Record<ShortfallState, { title: string; body: string
   },
   resolved: {
     title: "Liquidity Restored",
-    body: "RM 980 received from Ahmad bin Yusof · RM 180 surplus over the RM 800 shortfall.",
+    body: "RM 980 received from Ahmad bin Yusof (Ayam Gepuk Mak Cik) · RM 180 surplus over RM 800 shortfall.",
     cta: null,
   },
 };

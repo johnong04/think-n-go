@@ -11,15 +11,23 @@ import { publish, useDemoBus } from "@/lib/demo-bus";
 import { escrowDraft } from "@/lib/mobile-mock-data";
 import {
   ApiError,
+  DEMO_IDS,
   getDemandPressureInsight,
   getMockDemandPressure,
+  postAuditArbitrage,
+  postRequestUnderwriting,
   type InvoiceDraft,
   type MsmeInsightResponse,
   type MsmeDemandPressureSummary,
 } from "@/lib/api";
+import { streamText } from "@/lib/text-stream";
 
 type Scene = "alert" | "scan" | "contract" | "offer";
 const ACTIVE_INVOICE_KEY = "think-n-go-active-invoice";
+
+// Demo-fixed cash-on-hand for Ahmad. Funding split is total = cash + BNPL.
+// Keeps the mobile, swarm-console, and underwriting reasoning aligned to one number.
+const MERCHANT_CASH_ON_HAND_RM = 500;
 
 function parseNetDays(value: string | undefined) {
   const match = value?.match(/\d+/);
@@ -30,8 +38,8 @@ function buildEscrowDraft(summary: MsmeDemandPressureSummary | null, invoice: In
   const totalRm =
     invoice?.total || summary?.calculation_trace.typical_large_outflow_rm || escrowDraft.totalRm;
   const supplierName = invoice?.supplier.name || escrowDraft.wholesalerName;
-  const bnplRm = summary?.calculation_trace.suggested_bnpl_topup_rm || escrowDraft.bnplRm;
-  const ownFundsRm = Math.max(0, totalRm - bnplRm);
+  const ownFundsRm = Math.min(MERCHANT_CASH_ON_HAND_RM, totalRm);
+  const bnplRm = Math.max(0, totalRm - ownFundsRm);
 
   return {
     ...escrowDraft,
@@ -66,11 +74,15 @@ export default function MobileMockPage() {
   const [scene, setScene] = useState<Scene>("alert");
   const [offerSettled, setOfferSettled] = useState(false);
   const [incomingDiscountPct, setIncomingDiscountPct] = useState(2.0);
+  const [activeContractId, setActiveContractId] = useState<string | null>(null);
   const [summary, setSummary] = useState<MsmeDemandPressureSummary | null>(null);
   const [activeInvoice, setActiveInvoice] = useState<InvoiceDraft | null>(null);
   const [insight, setInsight] = useState<MsmeInsightResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [underwritingText, setUnderwritingText] = useState<string>("");
+  const [arbitrageText, setArbitrageText] = useState<string>("");
+  const [swarmPhase, setSwarmPhase] = useState<string>("idle");
 
   useEffect(() => {
     let cancelled = false;
@@ -141,10 +153,39 @@ export default function MobileMockPage() {
         setActiveInvoice(event.payload);
         return;
       }
+      if (event.type === "swarm:phase-changed") {
+        setSwarmPhase(event.payload.phase);
+        return;
+      }
       if (event.type === "wholesaler:offer-sent") {
         setIncomingDiscountPct(event.payload.discountPct);
         setOfferSettled(false);
+        setActiveContractId(event.payload.escrowId);
+        setArbitrageText("");
         setScene("offer");
+
+        // Fire audit-arbitrage in the background, stream reasoning into UI
+        if (event.payload.escrowId) {
+          void postAuditArbitrage({
+            contract_id: event.payload.escrowId,
+            discount_rate: event.payload.discountPct / 100,
+          })
+            .then((resp) => {
+              streamText(resp.reasoning_text, (t) => setArbitrageText(t));
+            })
+            .catch((err) => {
+              console.warn("audit-arbitrage failed", err);
+              setArbitrageText("+RM 18.50 vs holding 14d at 4% APY. ACCEPT.");
+            });
+        }
+      }
+      if (event.type === "system:reset") {
+        setScene("alert");
+        setOfferSettled(false);
+        setActiveContractId(null);
+        setUnderwritingText("");
+        setArbitrageText("");
+        setSwarmPhase("idle");
       }
     }, [])
   );
@@ -152,20 +193,44 @@ export default function MobileMockPage() {
   function fundOrder() {
     publish({
       type: "merchant:bnpl-funded",
-      payload: { escrowId: liveDraft.escrowId, amount: liveDraft.totalRm, bnpl: liveDraft.bnplRm },
+      payload: {
+        escrowId: liveDraft.escrowId,
+        amount: liveDraft.totalRm,
+        bnpl: liveDraft.bnplRm,
+        cash: liveDraft.ownFundsRm,
+      },
     });
     setScene("scan");
   }
 
-  function lockEscrow() {
+  async function lockEscrow() {
+    setUnderwritingText("");
+
+    let realContractId: string | null = null;
+    try {
+      const resp = await postRequestUnderwriting({
+        merchant_id: DEMO_IDS.merchants.ahmad,
+        supplier_id: DEMO_IDS.wholesaler,
+        principal_amount: liveDraft.totalRm,
+      });
+      realContractId = resp.contract_id;
+      setActiveContractId(realContractId);
+      streamText(resp.reasoning_text, (t) => setUnderwritingText(t));
+    } catch (err) {
+      console.warn("underwriting failed, using fallback id", err);
+      setUnderwritingText(
+        "Approved RM 500 BNPL on top of RM 500 cash. Repayment via 5% sweep on daily QR receipts."
+      );
+    }
+
     publish({
       type: "merchant:escrow-locked",
       payload: {
-        escrowId: liveDraft.escrowId,
+        escrowId: realContractId ?? liveDraft.escrowId,
         amount: liveDraft.totalRm,
         termDays: liveDraft.termDays,
         merchantName: "Ahmad bin Yusof",
-        business: liveDraft.receiverName || "Merchant profile unavailable",
+        business: liveDraft.receiverName || "Ayam Gepuk Mak Cik",
       },
     });
     setScene("alert");
@@ -176,7 +241,7 @@ export default function MobileMockPage() {
     publish({
       type: "merchant:offer-accepted",
       payload: {
-        escrowId: liveDraft.escrowId,
+        escrowId: activeContractId ?? liveDraft.escrowId,
         discountPct: incomingDiscountPct,
         payout: liveDraft.totalRm - discountRm,
       },
@@ -223,6 +288,8 @@ export default function MobileMockPage() {
               expectedDailyRepaymentRm={expectedDailyRepaymentRm}
               onLock={lockEscrow}
               onBack={() => setScene("scan")}
+              underwritingText={underwritingText}
+              lockDisabled={["t1", "t2", "t3", "t4", "t5"].includes(swarmPhase)}
             />
           )}
           {scene === "offer" && (
@@ -232,6 +299,7 @@ export default function MobileMockPage() {
               onAccept={acceptOffer}
               onDecline={declineOffer}
               settled={offerSettled}
+              arbitrageText={arbitrageText}
             />
           )}
         </motion.div>

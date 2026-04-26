@@ -3,7 +3,7 @@
 import { AnimatePresence, motion } from "motion/react";
 import { cn } from "@/lib/utils";
 import { AITextLoading } from "@/components/ui/ai-text-loading";
-import { toolCallsByScenario } from "@/lib/mock-data";
+import { toolCallsByScenario, type ToolCall } from "@/lib/mock-data";
 import type { SwarmPhase, SwarmScenario } from "@/lib/swarm-machine";
 
 const PHASE_TO_INDEX: Record<Exclude<SwarmPhase, "idle" | "settled" | "awaiting">, number> = {
@@ -32,10 +32,15 @@ function visibleEntries(scenario: SwarmScenario | null, phase: SwarmPhase) {
 type Props = {
   scenario: SwarmScenario | null;
   phase: SwarmPhase;
+  /** When the swarm runs against real backend, the orchestrator passes in
+   *  ToolCall entries with streamed reasoningText. Falls back to mock data. */
+  liveEntries?: ToolCall[];
 };
 
-export function ToolLog({ scenario, phase }: Props) {
-  const entries = visibleEntries(scenario, phase);
+export function ToolLog({ scenario, phase, liveEntries }: Props) {
+  const entries = liveEntries && liveEntries.length > 0
+    ? liveEntries
+    : visibleEntries(scenario, phase);
   const ordered = [...entries].reverse();
   const total = scenario ? toolCallsByScenario[scenario].length : 0;
 
@@ -85,6 +90,11 @@ export function ToolLog({ scenario, phase }: Props) {
                   ) : (
                     <span className="text-[10px] text-muted-foreground">{entry.detail}</span>
                   )}
+                  {entry.reasoningText ? (
+                    <span className="mt-1 block font-editorial text-[11px] italic leading-snug text-ink/80">
+                      {entry.reasoningText}
+                    </span>
+                  ) : null}
                 </span>
               </motion.div>
             ))

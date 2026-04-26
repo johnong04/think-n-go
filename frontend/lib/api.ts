@@ -183,3 +183,141 @@ export async function reviseInvoiceDraft(draft: InvoiceDraft, instruction: strin
 }
 
 export { ApiError };
+
+// ─── Demo / Dashboard ────────────────────────────────────────────────────
+export type DashboardKpisResponse = {
+  escrow_locked_rm: string;
+  liquidity_available_rm: string;
+  active_msmes: number;
+  go_plus_yield_30d_rm: string;
+};
+
+export type DemoResetResponse = {
+  ok: boolean;
+  wholesaler: string;
+  merchants: number;
+  contracts: number;
+};
+
+export async function postDemoReset() {
+  return apiFetch<DemoResetResponse>("/demo/reset", { method: "POST" });
+}
+
+export async function getDashboardKpis() {
+  return apiFetch<DashboardKpisResponse>("/dashboard/kpis", { method: "GET" });
+}
+
+// ─── Contracts (live escrow table) ───────────────────────────────────────
+export type ContractRow = {
+  id: string;
+  status: string;
+  principal_amount: string;
+  net_days: string | null;
+  business_name: string | null;
+  receiver_name: string | null;
+  date_created: string;
+};
+
+export async function getActiveContracts() {
+  return apiFetch<ContractRow[]>("/contracts/", { method: "GET" });
+}
+
+// ─── Agent endpoints ─────────────────────────────────────────────────────
+export type OptimizeDiscountResponse = {
+  suggested_discount_rate: string;
+  target_contracts: string[];
+  message: string;
+  reasoning_text: string;
+};
+
+export async function postOptimizeDiscount(input: {
+  supplier_id: string;
+  target_cash: number;
+}) {
+  return apiFetch<OptimizeDiscountResponse>("/agent/supplier/optimize-discount", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+}
+
+export type AuditArbitrageResponse = {
+  yield_calculation: string;
+  discount_capture: string;
+  decision_engine: string;
+  reasoning_text: string;
+};
+
+export async function postAuditArbitrage(input: {
+  contract_id: string;
+  discount_rate: number;
+}) {
+  return apiFetch<AuditArbitrageResponse>("/agent/merchant/audit-arbitrage", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+}
+
+export type UnderwriteResponse = {
+  contract_id: string;
+  status: string;
+  principal: string;
+  funding_source: string;
+  message: string;
+  reasoning_text: string;
+};
+
+export async function postRequestUnderwriting(input: {
+  merchant_id: string;
+  supplier_id: string;
+  principal_amount: number;
+}) {
+  return apiFetch<UnderwriteResponse>("/agent/merchant/request-underwriting", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+}
+
+export type SettleEarlyResponse = {
+  contract_id: string;
+  status: string;
+  payout_to_supplier_rm: string;
+  rebate_to_merchant_rm: string;
+  ledger_hash: string;
+  reasoning_text: string;
+};
+
+export async function postTriggerSettlement(input: {
+  contract_id: string;
+  discount_rate: number;
+}) {
+  return apiFetch<SettleEarlyResponse>("/agent/merchant/trigger-settlement", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+}
+
+export type VelocityAnalysisResponse = {
+  merchant_id: string;
+  predicted_shortfall_hours: number;
+  message: string;
+  reasoning_text: string;
+};
+
+export async function getAnalyzeVelocity(merchantId: string) {
+  return apiFetch<VelocityAnalysisResponse>(
+    `/agent/merchant/analyze-velocity/${merchantId}`,
+    { method: "GET" }
+  );
+}
+
+// ─── Demo constants (the stable IDs from seed_demo.py) ───────────────────
+export const DEMO_IDS = {
+  wholesaler: "00000000-0000-4000-8000-000000000001",
+  merchants: {
+    ahmad: "00000000-0000-4000-8000-000000000010",
+    siti: "00000000-0000-4000-8000-000000000011",
+    tan: "00000000-0000-4000-8000-000000000012",
+    faisal: "00000000-0000-4000-8000-000000000013",
+    rajesh: "00000000-0000-4000-8000-000000000014",
+  },
+} as const;
