@@ -12,7 +12,8 @@ export type BusEvent =
   | { type: "invoice:draft-updated";         payload: InvoiceDraft }
   | { type: "wholesaler:offer-sent";         payload: { escrowId: string; discountPct: number; clientName: string; offerAmountRm: number } }
   | { type: "wholesaler:liquidation-triggered"; payload: { shortfallRm: number } }
-  | { type: "wholesaler:liquidity-received"; payload: { escrowId: string; amountRm: number } };
+  | { type: "wholesaler:liquidity-received"; payload: { escrowId: string; amountRm: number } }
+  | { type: "system:reset";                  payload: Record<string, never> };
 
 export function publish(event: BusEvent) {
   if (typeof window === "undefined") return;
