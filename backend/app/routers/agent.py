@@ -38,16 +38,22 @@ async def optimize_discount_strategy(body: OptimizeDiscountRequest, db: AsyncSes
     Supplier AI: "The Liquidity Broker"
     Finds FUNDED contracts and suggests a blended discount rate to hit a cash target.
     """
-    result = await db.execute(
-        select(Contract).where(
-            Contract.supplier_id == body.supplier_id,
-            Contract.status.in_([ContractStatus.FUNDED, ContractStatus.FUNDED_INVESTED])
-        )
-    )
-    contracts = result.scalars().all()
+    # Raw SQL because Enum(ContractStatus) emits ::contractstatus while DB
+    # type is contract_status. Same workaround as backend/app/routers/demo.py.
+    rows = (await db.execute(
+        text("""
+            SELECT id, principal_amount FROM contracts
+            WHERE supplier_id = :sid
+              AND status::text IN ('FUNDED','FUNDED_INVESTED')
+            ORDER BY date_created DESC NULLS LAST, created_at DESC
+        """),
+        {"sid": body.supplier_id},
+    )).all()
 
-    if not contracts:
+    if not rows:
         raise HTTPException(status_code=404, detail="No funded contracts available for early release.")
+
+    contracts = [type("C", (), {"id": r[0], "principal_amount": r[1]}) for r in rows]
 
     total_in_escrow = sum(c.principal_amount for c in contracts)
     
