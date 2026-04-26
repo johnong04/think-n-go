@@ -25,6 +25,10 @@ import { streamText } from "@/lib/text-stream";
 type Scene = "alert" | "scan" | "contract" | "offer";
 const ACTIVE_INVOICE_KEY = "think-n-go-active-invoice";
 
+// Demo-fixed cash-on-hand for Ahmad. Funding split is total = cash + BNPL.
+// Keeps the mobile, swarm-console, and underwriting reasoning aligned to one number.
+const MERCHANT_CASH_ON_HAND_RM = 500;
+
 function parseNetDays(value: string | undefined) {
   const match = value?.match(/\d+/);
   return match ? Number(match[0]) : escrowDraft.termDays;
@@ -34,8 +38,8 @@ function buildEscrowDraft(summary: MsmeDemandPressureSummary | null, invoice: In
   const totalRm =
     invoice?.total || summary?.calculation_trace.typical_large_outflow_rm || escrowDraft.totalRm;
   const supplierName = invoice?.supplier.name || escrowDraft.wholesalerName;
-  const bnplRm = summary?.calculation_trace.suggested_bnpl_topup_rm || escrowDraft.bnplRm;
-  const ownFundsRm = Math.max(0, totalRm - bnplRm);
+  const ownFundsRm = Math.min(MERCHANT_CASH_ON_HAND_RM, totalRm);
+  const bnplRm = Math.max(0, totalRm - ownFundsRm);
 
   return {
     ...escrowDraft,
@@ -78,6 +82,7 @@ export default function MobileMockPage() {
   const [error, setError] = useState<string | null>(null);
   const [underwritingText, setUnderwritingText] = useState<string>("");
   const [arbitrageText, setArbitrageText] = useState<string>("");
+  const [swarmPhase, setSwarmPhase] = useState<string>("idle");
 
   useEffect(() => {
     let cancelled = false;
@@ -148,6 +153,10 @@ export default function MobileMockPage() {
         setActiveInvoice(event.payload);
         return;
       }
+      if (event.type === "swarm:phase-changed") {
+        setSwarmPhase(event.payload.phase);
+        return;
+      }
       if (event.type === "wholesaler:offer-sent") {
         setIncomingDiscountPct(event.payload.discountPct);
         setOfferSettled(false);
@@ -176,6 +185,7 @@ export default function MobileMockPage() {
         setActiveContractId(null);
         setUnderwritingText("");
         setArbitrageText("");
+        setSwarmPhase("idle");
       }
     }, [])
   );
@@ -183,7 +193,12 @@ export default function MobileMockPage() {
   function fundOrder() {
     publish({
       type: "merchant:bnpl-funded",
-      payload: { escrowId: liveDraft.escrowId, amount: liveDraft.totalRm, bnpl: liveDraft.bnplRm },
+      payload: {
+        escrowId: liveDraft.escrowId,
+        amount: liveDraft.totalRm,
+        bnpl: liveDraft.bnplRm,
+        cash: liveDraft.ownFundsRm,
+      },
     });
     setScene("scan");
   }
@@ -274,6 +289,7 @@ export default function MobileMockPage() {
               onLock={lockEscrow}
               onBack={() => setScene("scan")}
               underwritingText={underwritingText}
+              lockDisabled={["t1", "t2", "t3", "t4", "t5"].includes(swarmPhase)}
             />
           )}
           {scene === "offer" && (

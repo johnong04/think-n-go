@@ -103,9 +103,18 @@ export function SwarmConsole({ scenario, phase, onScenarioChange, onPhaseChange 
   const abortRef = useRef<{ aborted: boolean }>({ aborted: false });
   const activeStreamRef = useRef<StreamHandle | null>(null);
   const activeWaitRef = useRef<WaitHandle | null>(null);
+  // Latest funding payload from `merchant:bnpl-funded` — kept so Scenario B
+  // Phase t2 reasoning interpolates the same numbers the mobile is showing.
+  const fundedPayloadRef = useRef<{ amount: number; bnpl: number; cash: number } | null>(null);
 
   const setPhase = useCallback((p: SwarmPhase) => {
     onPhaseChange(p);
+    // Broadcast every transition so the mobile can gate its Lock Escrow button
+    // on the agent actually reaching "awaiting".
+    publish({
+      type: "swarm:phase-changed",
+      payload: { phase: p, scenario: scenarioRef.current },
+    });
   }, [onPhaseChange]);
 
   const setScenario = useCallback((s: SwarmScenario | null) => {
@@ -157,6 +166,11 @@ export function SwarmConsole({ scenario, phase, onScenarioChange, onPhaseChange 
     abortRef.current = { aborted: false };
     const signal = abortRef.current;
 
+    // Pre-arm the resume listener BEFORE phase t1 so a fast mobile-side
+    // "merchant:offer-accepted" can't slip past us between phases.
+    const wait = waitForBus("merchant:offer-accepted");
+    activeWaitRef.current = wait;
+
     try {
       const baseEntries = toolCallsByScenario.A;
       setLiveEntries([]);
@@ -205,10 +219,8 @@ export function SwarmConsole({ scenario, phase, onScenarioChange, onPhaseChange 
       await sleep(400, signal);
       if (signal.aborted) return;
 
-      // Pause for mobile accept
+      // Pause for mobile accept (listener was pre-armed at start of runner)
       setPhase("awaiting");
-      const wait = waitForBus("merchant:offer-accepted");
-      activeWaitRef.current = wait;
       await wait.promise;
       activeWaitRef.current = null;
       if (signal.aborted) return;
@@ -295,6 +307,11 @@ export function SwarmConsole({ scenario, phase, onScenarioChange, onPhaseChange 
     abortRef.current = { aborted: false };
     const signal = abortRef.current;
 
+    // Pre-arm the resume listener BEFORE phase t1 so a fast mobile-side
+    // "merchant:escrow-locked" can't slip past us between phases.
+    const wait = waitForBus("merchant:escrow-locked");
+    activeWaitRef.current = wait;
+
     try {
       const baseEntries = toolCallsByScenario.B;
       setLiveEntries([]);
@@ -318,18 +335,20 @@ export function SwarmConsole({ scenario, phase, onScenarioChange, onPhaseChange 
       await streamEntry(baseEntries[0], velocity.reasoning_text);
       if (signal.aborted) return;
 
-      // Phase t2: visualize underwriting
+      // Phase t2: visualize underwriting using the actual mobile-side split
       setPhase("t2");
-      await streamEntry(
-        baseEntries[1],
-        "Approved RM 500 BNPL · RM 500 cash · 30d QR velocity RM 18,400 supports repayment via 5% sweep."
-      );
+      const funded = fundedPayloadRef.current;
+      const cashRm = funded?.cash ?? 500;
+      const bnplRm = funded?.bnpl ?? 500;
+      const totalRm = funded?.amount ?? 1000;
+      const underwritingLine = bnplRm > 0
+        ? `Approved RM ${bnplRm.toLocaleString("en-MY")} BNPL · RM ${cashRm.toLocaleString("en-MY")} cash on RM ${totalRm.toLocaleString("en-MY")} order · 30d QR velocity RM 18,400 supports 5% sweep repayment.`
+        : `Full-cash purchase RM ${totalRm.toLocaleString("en-MY")} · no BNPL needed · 30d QR velocity RM 18,400 healthy.`;
+      await streamEntry(baseEntries[1], underwritingLine);
       if (signal.aborted) return;
 
-      // Pause for mobile to lock the escrow
+      // Pause for mobile to lock the escrow (listener was pre-armed at start)
       setPhase("awaiting");
-      const wait = waitForBus("merchant:escrow-locked");
-      activeWaitRef.current = wait;
       await wait.promise;
       activeWaitRef.current = null;
       if (signal.aborted) return;
@@ -363,6 +382,7 @@ export function SwarmConsole({ scenario, phase, onScenarioChange, onPhaseChange 
           setLiveEntries([]);
           setReceipt(null);
           setScenario(null);
+          fundedPayloadRef.current = null;
           setPhase("idle");
           runningRef.current = false;
           return;
@@ -375,8 +395,14 @@ export function SwarmConsole({ scenario, phase, onScenarioChange, onPhaseChange 
           return;
         }
 
-        // Scenario B trigger
+        // Scenario B trigger — also capture funding payload so Phase t2
+        // reasoning can interpolate the same split the mobile is showing.
         if (event.type === "merchant:bnpl-funded" && ph === "idle" && !runningRef.current) {
+          fundedPayloadRef.current = {
+            amount: event.payload.amount,
+            bnpl: event.payload.bnpl,
+            cash: event.payload.cash,
+          };
           setScenario("B");
           void runScenarioB();
           return;

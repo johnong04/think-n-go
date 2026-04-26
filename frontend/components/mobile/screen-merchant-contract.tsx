@@ -15,6 +15,8 @@ type Props = {
   onBack: () => void;
   /** Bedrock-generated underwriting reasoning, char-streamed in. */
   underwritingText?: string;
+  /** Disable Lock Escrow while the swarm agent is still reasoning upstream. */
+  lockDisabled?: boolean;
 };
 
 export function ScreenMerchantContract({
@@ -24,6 +26,7 @@ export function ScreenMerchantContract({
   onLock,
   onBack,
   underwritingText,
+  lockDisabled,
 }: Props) {
   const totalYield = draft.dailyYieldRm * draft.termDays;
   const ownPct = draft.totalRm > 0 ? (draft.ownFundsRm / draft.totalRm) * 100 : 0;
@@ -207,10 +210,15 @@ export function ScreenMerchantContract({
         ) : null}
 
         <div className="mt-2 flex flex-col gap-2">
-          <TngButton onClick={onLock}>
+          <TngButton onClick={onLock} disabled={lockDisabled}>
             <Lock className="mr-2 size-4" />
-            Lock Escrow {fmtRm(draft.totalRm, 2)}
+            {lockDisabled ? "Agent reviewing…" : `Lock Escrow ${fmtRm(draft.totalRm, 2)}`}
           </TngButton>
+          {lockDisabled ? (
+            <p className="text-center font-mono text-[10px] uppercase tracking-[0.1em] text-white/70">
+              swarm agent confirming underwriting · please wait
+            </p>
+          ) : null}
           <TngButton variant="secondary" onClick={onBack}>
             Edit
           </TngButton>
